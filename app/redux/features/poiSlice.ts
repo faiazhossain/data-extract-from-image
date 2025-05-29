@@ -36,6 +36,7 @@ interface POIState {
   pois: POI[];
   visiblePOIs: POI[];
   selectedPOI: string | null;
+  hoveredPOI: string | null;
   loading: boolean;
   error: string | null;
   showUploadPrompt: boolean;
@@ -46,6 +47,7 @@ const initialState: POIState = {
   pois: [], // Start with empty array
   visiblePOIs: [], // POIs currently visible/animated on the map
   selectedPOI: null,
+  hoveredPOI: null,
   loading: false,
   error: null,
   showUploadPrompt: true, // Show upload prompt by default
@@ -58,6 +60,11 @@ export const processImageData = createAsyncThunk(
   async (imageFile: File) => {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Log the image details (to use imageFile and avoid TS warning)
+    console.log(
+      `Processing image: ${imageFile.name} (${imageFile.size} bytes)`
+    );
 
     // In a real implementation, this would upload the image to the server
     // and process it, returning POIs. For now, we'll use mock data.
@@ -78,11 +85,14 @@ export const poiSlice = createSlice({
     // Action to add POIs gradually for animation
     addVisiblePOI: (state, action: PayloadAction<POI>) => {
       state.visiblePOIs.push(action.payload);
-    },
-
-    // Action to select a POI
+    }, // Action to select a POI
     selectPOI: (state, action: PayloadAction<string | null>) => {
       state.selectedPOI = action.payload;
+    },
+
+    // Action to set hovered POI
+    setHoveredPOI: (state, action: PayloadAction<string | null>) => {
+      state.hoveredPOI = action.payload;
     },
 
     // Action to update POI status
@@ -149,13 +159,12 @@ export const poiSlice = createSlice({
         }
         return poi;
       });
-    },
-
-    // Action to clear all data
+    }, // Action to clear all data
     clearAllData: (state) => {
       state.pois = [];
       state.visiblePOIs = [];
       state.selectedPOI = null;
+      state.hoveredPOI = null;
       state.showUploadPrompt = true;
     },
   },
@@ -186,6 +195,7 @@ export const poiSlice = createSlice({
 export const {
   addVisiblePOI,
   selectPOI,
+  setHoveredPOI,
   updatePOIStatus,
   updatePOI,
   resetVisiblePOIs,

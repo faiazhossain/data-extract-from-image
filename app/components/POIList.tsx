@@ -3,7 +3,11 @@ import React from 'react';
 import Image from 'next/image';
 import { POI } from '../types';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { updatePOIStatus, selectPOI } from '../redux/features/poiSlice';
+import {
+  updatePOIStatus,
+  selectPOI,
+  setHoveredPOI,
+} from '../redux/features/poiSlice';
 
 interface POIListProps {
   onUploadImage: () => void;
@@ -12,9 +16,8 @@ interface POIListProps {
 
 const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
   const dispatch = useAppDispatch();
-  const { visiblePOIs, selectedPOI, processingImage } = useAppSelector(
-    (state) => state.poi
-  ); // Status to color mapping
+  const { visiblePOIs, selectedPOI, hoveredPOI, processingImage } =
+    useAppSelector((state) => state.poi); // Status to color mapping
   const getStatusColor = (status: POI['status']) => {
     switch (status) {
       case 'ai':
@@ -96,10 +99,16 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
             {visiblePOIs.map((poi) => (
               <li
                 key={poi.id}
-                className={`p-4 hover:bg-gray-50 ${
+                className={`p-4 hover:bg-gray-50 transition-all duration-150 ${
                   selectedPOI === poi.id ? 'bg-blue-50' : ''
+                } ${
+                  hoveredPOI === poi.id
+                    ? 'bg-blue-100 shadow-md scale-[1.01] transform'
+                    : ''
                 }`}
                 onClick={() => handleSelectPOI(poi.id)}
+                onMouseEnter={() => dispatch(setHoveredPOI(poi.id))}
+                onMouseLeave={() => dispatch(setHoveredPOI(null))}
               >
                 <div className='flex items-start justify-between'>
                   <div className='flex-1'>
