@@ -38,21 +38,10 @@ const MapComponent = ({
   // Use a ref to store the map instance
   const mapRef = React.useRef<MapRef>(null);
 
-  // Effect to toggle satellite layer when showSatellite changes
-  React.useEffect(() => {
-    if (mapRef.current && mapRef.current.getMap) {
-      const map = mapRef.current.getMap();
-      if (map.isStyleLoaded()) {
-        if (showSatellite) {
-          // This would be replaced with actual satellite imagery in production
-          // Here we're just changing the background color to simulate the effect
-          map.setPaintProperty('background', 'background-color', '#143d6b');
-        } else {
-          map.setPaintProperty('background', 'background-color', '#ffffff');
-        }
-      }
-    }
-  }, [showSatellite]);
+  // Store the current map style based on satellite toggle
+  const currentMapStyle = showSatellite
+    ? 'https://api.maptiler.com/maps/dfa2a215-243b-4b69-87ef-ce275b09249c/style.json?key=ASrfqapsZfy4BRFJJdVy'
+    : mapStyle;
   // Status to color mapping
   const getMarkerColor = (status: POI['status']) => {
     switch (status) {
@@ -93,6 +82,7 @@ const MapComponent = ({
 
   return (
     <div className='relative' style={{ width: width, height: height }}>
+      {' '}
       <Map
         ref={mapRef}
         initialViewState={{
@@ -101,7 +91,7 @@ const MapComponent = ({
           zoom,
         }}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={mapStyle}
+        mapStyle={currentMapStyle}
       >
         {/* Navigation Controls */}
         <NavigationControl position='top-right' /> {/* POI Markers */}
@@ -174,7 +164,6 @@ const MapComponent = ({
           </Marker>
         ))}
       </Map>
-
       {/* Satellite Toggle */}
       <div className='absolute top-3 left-3 bg-white rounded-md shadow-md p-2'>
         <label className='inline-flex items-center cursor-pointer'>
