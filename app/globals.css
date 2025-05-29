@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles for map container */
+.mapboxgl-map,
+.maplibregl-map {
+  height: 100%;
+  width: 100%;
+}
+
+/* Ensure map container has proper dimensions */
+.relative {
+  position: relative;
+}
