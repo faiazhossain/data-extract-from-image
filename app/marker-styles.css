@@ -1,0 +1,38 @@
+/* Custom styles for map markers to improve visibility */
+
+.marker-container {
+  position: relative;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.marker-pulse {
+  position: absolute;
+  border-radius: 50%;
+  transform-origin: center;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.marker-shadow {
+  position: absolute;
+  height: 10px;
+  width: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  filter: blur(2px);
+  transform: translateY(10px) scaleX(0.8);
+  z-index: -1;
+}
+
+/* Status-specific styling */
+.marker-ai {
+  filter: drop-shadow(0 0 6px rgba(255, 204, 0, 0.8));
+}
+
+.marker-verified {
+  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.8));
+}
+
+.marker-rejected {
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8));
+}

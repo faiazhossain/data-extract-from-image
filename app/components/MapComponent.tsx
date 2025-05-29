@@ -1,14 +1,17 @@
 'use client';
 import * as React from 'react';
-import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
+import Map, { Marker, NavigationControl, MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Explicitly import styles again to ensure they're loaded
+// Explicitly import styles
 import '../maplibre-fix.css';
+import '../marker-styles.css';
 
 // Import types
 import { POI } from '../types';
 import { useAppSelector } from '../redux/hooks';
+import MarkerRipple from './MarkerRipple';
 
 interface MapComponentProps {
   width?: number | string;
@@ -31,10 +34,9 @@ const MapComponent = ({
 }: MapComponentProps) => {
   // Get POIs from Redux store
   const { visiblePOIs, selectedPOI } = useAppSelector((state) => state.poi);
-
   const [showSatellite, setShowSatellite] = React.useState(false);
   // Use a ref to store the map instance
-  const mapRef = React.useRef<any>(null);
+  const mapRef = React.useRef<MapRef>(null);
 
   // Effect to toggle satellite layer when showSatellite changes
   React.useEffect(() => {
@@ -64,25 +66,30 @@ const MapComponent = ({
         return '#FFCC00'; // Default yellow
     }
   };
+  // Track newly added POIs for animation
+  const [animatedPOIs, setAnimatedPOIs] = React.useState<Set<string>>(
+    new Set()
+  );
 
-  // Animation for POI markers
-  const [markerAnimation, setMarkerAnimation] = React.useState<{
-    [key: string]: boolean;
-  }>({});
+  // Function to calculate animation delay based on index for staggered animation
+  const getAnimationDelay = (poiId: string) => {
+    const index = visiblePOIs.findIndex((poi) => poi.id === poiId);
+    return index * 0.15; // 150ms delay between each marker's animation
+  };
 
-  // Trigger animation for newly added POIs
+  // Keep track of which POIs have been animated
   React.useEffect(() => {
-    visiblePOIs.forEach((poi) => {
-      if (!markerAnimation[poi.id]) {
-        setMarkerAnimation((prev) => ({ ...prev, [poi.id]: true }));
+    if (visiblePOIs.length > 0) {
+      // Find POIs that haven't been animated yet
+      const newPOIs = visiblePOIs.filter((poi) => !animatedPOIs.has(poi.id));
 
-        // Reset animation after it plays
-        setTimeout(() => {
-          setMarkerAnimation((prev) => ({ ...prev, [poi.id]: false }));
-        }, 1000);
+      if (newPOIs.length > 0) {
+        const newAnimatedPOIs = new Set(animatedPOIs);
+        newPOIs.forEach((poi) => newAnimatedPOIs.add(poi.id));
+        setAnimatedPOIs(newAnimatedPOIs);
       }
-    });
-  }, [visiblePOIs, markerAnimation]);
+    }
+  }, [visiblePOIs, animatedPOIs]);
 
   return (
     <div className='relative' style={{ width: width, height: height }}>
@@ -106,16 +113,64 @@ const MapComponent = ({
             anchor='bottom'
             onClick={() => onSelectPOI && onSelectPOI(poi)}
           >
-            <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transform transition-all duration-500 ${
-                markerAnimation[poi.id]
-                  ? 'scale-150 animate-bounce shadow-lg'
-                  : 'hover:scale-110'
-              } ${selectedPOI === poi.id ? 'ring-2 ring-blue-500' : ''}`}
-              style={{ backgroundColor: getMarkerColor(poi.status) }}
-            >
-              <span className='text-xs text-white font-bold'>P</span>
-            </div>
+            <AnimatePresence>
+              <motion.div
+                initial={{ y: -100, opacity: 0, scale: 0.3 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 15,
+                  delay: getAnimationDelay(poi.id),
+                  duration: 0.8,
+                }}
+                whileHover={{
+                  scale: 1.2,
+                  y: -5, // Lift the marker slightly on hover
+                  transition: { duration: 0.2 },
+                }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer shadow-lg marker-container marker-${
+                  poi.status
+                } ${
+                  selectedPOI === poi.id
+                    ? 'ring-3 ring-blue-500 ring-opacity-75'
+                    : ''
+                }`}
+                style={{
+                  backgroundColor: getMarkerColor(poi.status),
+                  position: 'relative',
+                }}
+              >
+                {/* Marker shadow for depth perception */}
+                <motion.div
+                  className='marker-shadow'
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 0.6, scale: 1 }}
+                  transition={{ delay: getAnimationDelay(poi.id) + 0.1 }}
+                />
+                <motion.span
+                  className='text-xs text-white font-bold'
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: getAnimationDelay(poi.id) + 0.3 }}
+                >
+                  POI
+                </motion.span>
+                {/* Show ripple effect for newly added markers */}
+                {!animatedPOIs.has(poi.id) && (
+                  <MarkerRipple color={getMarkerColor(poi.status)} />
+                )}
+                {/* Show indicator for selected POI */}
+                {selectedPOI === poi.id && (
+                  <motion.div
+                    className='absolute -bottom-1 w-3 h-3 bg-blue-500 rounded-full'
+                    initial={{ scale: 0 }}
+                    animate={{ scale: [0, 1.5, 1] }}
+                    transition={{ duration: 0.5 }}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </Marker>
         ))}
       </Map>

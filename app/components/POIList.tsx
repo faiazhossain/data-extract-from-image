@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import { POI } from '../types';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { updatePOIStatus, selectPOI } from '../redux/features/poiSlice';
@@ -11,8 +12,9 @@ interface POIListProps {
 
 const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
   const dispatch = useAppDispatch();
-  const { visiblePOIs, selectedPOI, showUploadPrompt, processingImage } =
-    useAppSelector((state) => state.poi); // Status to color mapping
+  const { visiblePOIs, selectedPOI, processingImage } = useAppSelector(
+    (state) => state.poi
+  ); // Status to color mapping
   const getStatusColor = (status: POI['status']) => {
     switch (status) {
       case 'ai':
@@ -54,15 +56,14 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
               </div>
             ) : (
               <>
-                <img
+                {' '}
+                <Image
                   src='/placeholder-map.svg'
                   alt='Upload Map Image'
-                  className='w-32 h-32 mb-6 text-gray-300'
-                  onError={(e) => {
-                    // Fallback if the image doesn't exist
-                    e.currentTarget.src =
-                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1' d='M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7'%3E%3C/path%3E%3C/svg%3E";
-                  }}
+                  width={128}
+                  height={128}
+                  className='mb-6 text-gray-300'
+                  // Next.js Image handles loading errors automatically
                 />
                 <p className='text-gray-600 text-center mb-4'>
                   No points of interest detected yet.

@@ -1,8 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { POI } from '../types';
-import { useAppDispatch } from '../redux/hooks';
-import { updatePOI } from '../redux/features/poiSlice';
 
 interface EditPOIModalProps {
   poi: POI | null;
