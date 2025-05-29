@@ -1,0 +1,196 @@
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { POI } from '../../types';
+
+// Initial mock data
+const initialMockPOIs: POI[] = [
+  {
+    id: '1',
+    name: 'Dhaka City Hospital',
+    category: 'Healthcare',
+    confidence: 0.92,
+    latitude: 23.8225,
+    longitude: 90.384,
+    status: 'ai',
+  },
+  {
+    id: '2',
+    name: 'Urban Plaza Mall',
+    category: 'Shopping',
+    confidence: 0.87,
+    latitude: 23.821,
+    longitude: 90.3855,
+    status: 'verified',
+  },
+  {
+    id: '3',
+    name: 'Dhaka Tech Hub',
+    category: 'Office',
+    confidence: 0.75,
+    latitude: 23.824,
+    longitude: 90.383,
+    status: 'rejected',
+  },
+];
+
+interface POIState {
+  pois: POI[];
+  visiblePOIs: POI[];
+  selectedPOI: string | null;
+  loading: boolean;
+  error: string | null;
+  showUploadPrompt: boolean;
+  processingImage: boolean;
+}
+
+const initialState: POIState = {
+  pois: [], // Start with empty array
+  visiblePOIs: [], // POIs currently visible/animated on the map
+  selectedPOI: null,
+  loading: false,
+  error: null,
+  showUploadPrompt: true, // Show upload prompt by default
+  processingImage: false,
+};
+
+// Simulate API call to process image and extract POIs
+export const processImageData = createAsyncThunk(
+  'pois/processImage',
+  async (imageFile: File) => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // In a real implementation, this would upload the image to the server
+    // and process it, returning POIs. For now, we'll use mock data.
+    const mockResponse = initialMockPOIs.map((poi) => ({
+      ...poi,
+      id: `${Date.now()}-${poi.id}`, // Generate unique IDs
+      status: 'ai' as const, // All newly detected POIs should have 'ai' status
+    }));
+
+    return mockResponse;
+  }
+);
+
+export const poiSlice = createSlice({
+  name: 'pois',
+  initialState,
+  reducers: {
+    // Action to add POIs gradually for animation
+    addVisiblePOI: (state, action: PayloadAction<POI>) => {
+      state.visiblePOIs.push(action.payload);
+    },
+
+    // Action to select a POI
+    selectPOI: (state, action: PayloadAction<string | null>) => {
+      state.selectedPOI = action.payload;
+    },
+
+    // Action to update POI status
+    updatePOIStatus: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        status: 'ai' | 'verified' | 'rejected';
+      }>
+    ) => {
+      const { id, status } = action.payload;
+      const poiIndex = state.pois.findIndex((poi) => poi.id === id);
+
+      if (poiIndex !== -1) {
+        state.pois[poiIndex].status = status;
+
+        // Also update in visiblePOIs
+        const visibleIndex = state.visiblePOIs.findIndex(
+          (poi) => poi.id === id
+        );
+        if (visibleIndex !== -1) {
+          state.visiblePOIs[visibleIndex].status = status;
+        }
+      }
+    },
+
+    // Action to update a POI's details
+    updatePOI: (state, action: PayloadAction<POI>) => {
+      const updatedPOI = action.payload;
+      const poiIndex = state.pois.findIndex((poi) => poi.id === updatedPOI.id);
+
+      if (poiIndex !== -1) {
+        state.pois[poiIndex] = updatedPOI;
+
+        // Also update in visiblePOIs
+        const visibleIndex = state.visiblePOIs.findIndex(
+          (poi) => poi.id === updatedPOI.id
+        );
+        if (visibleIndex !== -1) {
+          state.visiblePOIs[visibleIndex] = updatedPOI;
+        }
+      }
+    },
+
+    // Action to reset visible POIs (for new data processing)
+    resetVisiblePOIs: (state) => {
+      state.visiblePOIs = [];
+    },
+
+    // Action to save POIs to database (mock for now)
+    saveToDatabase: (state) => {
+      // In a real implementation, this would call an API
+      // For now, just mark everything as saved by changing status
+      state.pois.forEach((poi) => {
+        if (poi.status === 'ai') {
+          poi.status = 'verified';
+        }
+      });
+
+      // Also update visiblePOIs to reflect changes
+      state.visiblePOIs = state.visiblePOIs.map((poi) => {
+        if (poi.status === 'ai') {
+          return { ...poi, status: 'verified' };
+        }
+        return poi;
+      });
+    },
+
+    // Action to clear all data
+    clearAllData: (state) => {
+      state.pois = [];
+      state.visiblePOIs = [];
+      state.selectedPOI = null;
+      state.showUploadPrompt = true;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(processImageData.pending, (state) => {
+        state.loading = true;
+        state.processingImage = true;
+        state.error = null;
+        state.showUploadPrompt = false;
+      })
+      .addCase(processImageData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.processingImage = false;
+        state.pois = action.payload;
+        // Don't populate visiblePOIs yet - we'll do that gradually for animation
+        state.visiblePOIs = [];
+        state.error = null;
+      })
+      .addCase(processImageData.rejected, (state, action) => {
+        state.loading = false;
+        state.processingImage = false;
+        state.error = action.error.message || 'Failed to process image';
+      });
+  },
+});
+
+export const {
+  addVisiblePOI,
+  selectPOI,
+  updatePOIStatus,
+  updatePOI,
+  resetVisiblePOIs,
+  saveToDatabase,
+  clearAllData,
+} = poiSlice.actions;
+
+export default poiSlice.reducer;

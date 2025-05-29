@@ -1,33 +1,18 @@
 'use client';
 import React from 'react';
-
-// Using same POI interface as in MapComponent
-interface POI {
-  id: string;
-  name: string;
-  category: string;
-  confidence: number;
-  latitude: number;
-  longitude: number;
-  status: 'ai' | 'verified' | 'rejected';
-}
+import { POI } from '../types';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { updatePOIStatus, selectPOI } from '../redux/features/poiSlice';
 
 interface POIListProps {
-  pois: POI[];
-  onAccept: (id: string) => void;
-  onReject: (id: string) => void;
+  onUploadImage: () => void;
   onEdit: (id: string) => void;
-  selectedPOI?: string | null;
 }
 
-const POIList: React.FC<POIListProps> = ({
-  pois,
-  onAccept,
-  onReject,
-  onEdit,
-  selectedPOI,
-}) => {
-  // Status to color mapping
+const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
+  const dispatch = useAppDispatch();
+  const { visiblePOIs, selectedPOI, showUploadPrompt, processingImage } =
+    useAppSelector((state) => state.poi); // Status to color mapping
   const getStatusColor = (status: POI['status']) => {
     switch (status) {
       case 'ai':
@@ -41,6 +26,18 @@ const POIList: React.FC<POIListProps> = ({
     }
   };
 
+  const handleAccept = (id: string) => {
+    dispatch(updatePOIStatus({ id, status: 'verified' }));
+  };
+
+  const handleReject = (id: string) => {
+    dispatch(updatePOIStatus({ id, status: 'rejected' }));
+  };
+
+  const handleSelectPOI = (id: string) => {
+    dispatch(selectPOI(id === selectedPOI ? null : id));
+  };
+
   return (
     <div className='flex flex-col h-full overflow-hidden'>
       <h2 className='text-xl font-bold px-4 py-3 border-b'>
@@ -48,18 +45,60 @@ const POIList: React.FC<POIListProps> = ({
       </h2>
 
       <div className='flex-1 overflow-y-auto'>
-        {pois.length === 0 ? (
-          <div className='h-full flex items-center justify-center text-gray-400'>
-            No POIs found. Upload an image and run detection.
+        {visiblePOIs.length === 0 ? (
+          <div className='h-full flex flex-col items-center justify-center p-6'>
+            {processingImage ? (
+              <div className='flex flex-col items-center'>
+                <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4'></div>
+                <p className='text-gray-600'>Processing image...</p>
+              </div>
+            ) : (
+              <>
+                <img
+                  src='/placeholder-map.svg'
+                  alt='Upload Map Image'
+                  className='w-32 h-32 mb-6 text-gray-300'
+                  onError={(e) => {
+                    // Fallback if the image doesn't exist
+                    e.currentTarget.src =
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1' d='M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7'%3E%3C/path%3E%3C/svg%3E";
+                  }}
+                />
+                <p className='text-gray-600 text-center mb-4'>
+                  No points of interest detected yet.
+                  <br />
+                  Upload an image to begin.
+                </p>
+                <button
+                  onClick={onUploadImage}
+                  className='mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center'
+                >
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-5 w-5 mr-2'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path
+                      fillRule='evenodd'
+                      d='M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                  Upload Image
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <ul className='divide-y'>
-            {pois.map((poi) => (
+            {visiblePOIs.map((poi) => (
               <li
                 key={poi.id}
                 className={`p-4 hover:bg-gray-50 ${
                   selectedPOI === poi.id ? 'bg-blue-50' : ''
                 }`}
+                onClick={() => handleSelectPOI(poi.id)}
               >
                 <div className='flex items-start justify-between'>
                   <div className='flex-1'>
@@ -81,7 +120,10 @@ const POIList: React.FC<POIListProps> = ({
                   <div className='flex space-x-1'>
                     {poi.status !== 'verified' && (
                       <button
-                        onClick={() => onAccept(poi.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAccept(poi.id);
+                        }}
                         className='p-1 bg-green-100 hover:bg-green-200 rounded text-green-700 text-xs'
                         title='Accept'
                       >
@@ -101,7 +143,10 @@ const POIList: React.FC<POIListProps> = ({
                     )}
                     {poi.status !== 'rejected' && (
                       <button
-                        onClick={() => onReject(poi.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReject(poi.id);
+                        }}
                         className='p-1 bg-red-100 hover:bg-red-200 rounded text-red-700 text-xs'
                         title='Reject'
                       >
@@ -120,7 +165,10 @@ const POIList: React.FC<POIListProps> = ({
                       </button>
                     )}
                     <button
-                      onClick={() => onEdit(poi.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(poi.id);
+                      }}
                       className='p-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700 text-xs'
                       title='Edit'
                     >

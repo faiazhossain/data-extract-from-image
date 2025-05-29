@@ -6,16 +6,9 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 // Explicitly import styles again to ensure they're loaded
 import '../maplibre-fix.css';
 
-// Define the POI type
-interface POI {
-  id: string;
-  name: string;
-  category: string;
-  confidence: number;
-  latitude: number;
-  longitude: number;
-  status: 'ai' | 'verified' | 'rejected'; // 'ai' = yellow, 'verified' = green, 'rejected' = red
-}
+// Import types
+import { POI } from '../types';
+import { useAppSelector } from '../redux/hooks';
 
 interface MapComponentProps {
   width?: number | string;
@@ -24,7 +17,6 @@ interface MapComponentProps {
   longitude?: number;
   zoom?: number;
   mapStyle?: string;
-  pois?: POI[];
   onSelectPOI?: (poi: POI) => void;
 }
 
@@ -35,19 +27,30 @@ const MapComponent = ({
   longitude = 90.38367,
   zoom = 14,
   mapStyle = 'https://map.barikoi.com/styles/osm_barikoi_v2/style.json?key=NDE2NzpVNzkyTE5UMUoy',
-  pois = [],
   onSelectPOI,
-}: MapComponentProps) => {  const [showSatellite, setShowSatellite] = React.useState(false);
+}: MapComponentProps) => {
+  // Get POIs from Redux store
+  const { visiblePOIs, selectedPOI } = useAppSelector((state) => state.poi);
+
+  const [showSatellite, setShowSatellite] = React.useState(false);
   // Use a ref to store the map instance
   const mapRef = React.useRef<any>(null);
-  
+
   // Effect to toggle satellite layer when showSatellite changes
   React.useEffect(() => {
-    if (mapRef.current) {
-      console.log('Map is available, satellite toggle:', showSatellite);
+    if (mapRef.current && mapRef.current.getMap) {
+      const map = mapRef.current.getMap();
+      if (map.isStyleLoaded()) {
+        if (showSatellite) {
+          // This would be replaced with actual satellite imagery in production
+          // Here we're just changing the background color to simulate the effect
+          map.setPaintProperty('background', 'background-color', '#143d6b');
+        } else {
+          map.setPaintProperty('background', 'background-color', '#ffffff');
+        }
+      }
     }
   }, [showSatellite]);
-
   // Status to color mapping
   const getMarkerColor = (status: POI['status']) => {
     switch (status) {
@@ -61,8 +64,29 @@ const MapComponent = ({
         return '#FFCC00'; // Default yellow
     }
   };
+
+  // Animation for POI markers
+  const [markerAnimation, setMarkerAnimation] = React.useState<{
+    [key: string]: boolean;
+  }>({});
+
+  // Trigger animation for newly added POIs
+  React.useEffect(() => {
+    visiblePOIs.forEach((poi) => {
+      if (!markerAnimation[poi.id]) {
+        setMarkerAnimation((prev) => ({ ...prev, [poi.id]: true }));
+
+        // Reset animation after it plays
+        setTimeout(() => {
+          setMarkerAnimation((prev) => ({ ...prev, [poi.id]: false }));
+        }, 1000);
+      }
+    });
+  }, [visiblePOIs, markerAnimation]);
+
   return (
-    <div className='relative' style={{ width: width, height: height }}>      <Map
+    <div className='relative' style={{ width: width, height: height }}>
+      <Map
         ref={mapRef}
         initialViewState={{
           longitude,
@@ -73,10 +97,8 @@ const MapComponent = ({
         mapStyle={mapStyle}
       >
         {/* Navigation Controls */}
-        <NavigationControl position='top-right' />
-
-        {/* POI Markers */}
-        {pois.map((poi) => (
+        <NavigationControl position='top-right' /> {/* POI Markers */}
+        {visiblePOIs.map((poi: POI) => (
           <Marker
             key={poi.id}
             longitude={poi.longitude}
@@ -85,7 +107,11 @@ const MapComponent = ({
             onClick={() => onSelectPOI && onSelectPOI(poi)}
           >
             <div
-              className='w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transform hover:scale-110 transition-transform'
+              className={`w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transform transition-all duration-500 ${
+                markerAnimation[poi.id]
+                  ? 'scale-150 animate-bounce shadow-lg'
+                  : 'hover:scale-110'
+              } ${selectedPOI === poi.id ? 'ring-2 ring-blue-500' : ''}`}
               style={{ backgroundColor: getMarkerColor(poi.status) }}
             >
               <span className='text-xs text-white font-bold'>P</span>

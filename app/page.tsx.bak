@@ -1,0 +1,59 @@
+'use client';
+
+import { ReduxProvider } from './redux/provider';
+import AppContent from './AppContent';
+
+export default function Home() {
+  return (
+    <ReduxProvider>
+      <AppContent />
+    </ReduxProvider>
+  );
+}
+    // In a real app, this would save verified POIs to a database
+    console.log('Save to DB clicked');
+    // Mockup functionality to be implemented
+  };
+  return (
+    <div className='flex flex-col h-screen w-screen overflow-hidden'>
+      <ActionHeader
+        onUploadImage={handleUploadImage}
+        onRunDetection={handleRunDetection}
+        onSaveToDb={handleSaveToDb}
+        isProcessing={isProcessing}
+      />
+
+      <div className='flex flex-1 overflow-hidden'>
+        {/* Left side - Map */}
+        <div className='flex-1 h-full relative'>
+          <MapComponent
+            width="100%"
+            height="100%"
+            pois={pois}
+            onSelectPOI={handleSelectPOI}
+          />
+        </div>
+
+        {/* Right side - POI List */}
+        <div className='w-96 border-l border-gray-200 bg-white shadow-md'>
+          <POIList
+            pois={pois}
+            onAccept={handleAccept}
+            onReject={handleReject}
+            onEdit={handleEdit}
+            selectedPOI={selectedPOI}
+          />
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      {editingPOI && (
+        <EditPOIModal
+          poi={editingPOI}
+          onClose={() => setEditingPOI(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
+    </div>
+  );
+}
