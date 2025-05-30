@@ -16,6 +16,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -50,6 +51,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
   const handleFileSelection = async (file: File) => {
+    setError(null);
     // Check if the file is an image
     if (file.type.startsWith('image/')) {
       try {
@@ -68,16 +70,19 @@ const UploadModal: React.FC<UploadModalProps> = ({
       }
       setSelectedFile(file);
     } else {
-      // Show error for non-image files
-      alert('Please select an image file');
+      setError('Please select an image file');
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (selectedFile) {
-      onUpload(selectedFile);
-      setSelectedFile(null);
-      onClose();
+      try {
+        onUpload(selectedFile);
+        setSelectedFile(null);
+        onClose();
+      } catch (error) {
+        setError((error as Error).message);
+      }
     }
   };
 
@@ -107,9 +112,18 @@ const UploadModal: React.FC<UploadModalProps> = ({
         </div>
 
         <div className='px-6 py-4'>
+          {error && (
+            <div className='mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-lg'>
+              {error}
+            </div>
+          )}
           <div
             className={`border-2 border-dashed ${
-              isDragging ? 'border-blue-500' : 'border-gray-300'
+              isDragging
+                ? 'border-blue-500'
+                : error
+                ? 'border-red-300'
+                : 'border-gray-300'
             } rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}

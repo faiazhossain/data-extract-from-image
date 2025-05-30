@@ -1,37 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { POI } from '../../types';
 
-// Initial mock data
-const initialMockPOIs: POI[] = [
-  {
-    id: '1',
-    name: 'Dhaka City Hospital',
-    category: 'Healthcare',
-    confidence: 0.92,
-    latitude: 23.8225,
-    longitude: 90.384,
-    status: 'ai',
-  },
-  {
-    id: '2',
-    name: 'Urban Plaza Mall',
-    category: 'Shopping',
-    confidence: 0.87,
-    latitude: 23.821,
-    longitude: 90.3855,
-    status: 'verified',
-  },
-  {
-    id: '3',
-    name: 'Dhaka Tech Hub',
-    category: 'Office',
-    confidence: 0.75,
-    latitude: 23.824,
-    longitude: 90.383,
-    status: 'rejected',
-  },
-];
-
 interface POIState {
   pois: POI[];
   visiblePOIs: POI[];
@@ -58,23 +27,24 @@ const initialState: POIState = {
 export const processImageData = createAsyncThunk(
   'pois/processImage',
   async (imageFile: File) => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const formData = new FormData();
+    formData.append('file', imageFile);
 
-    // Log the image details (to use imageFile and avoid TS warning)
-    console.log(
-      `Processing image: ${imageFile.name} (${imageFile.size} bytes)`
-    );
+    try {
+      const response = await fetch('https://usage.bmapsbd.com/view', {
+        method: 'POST',
+        body: formData,
+      });
 
-    // In a real implementation, this would upload the image to the server
-    // and process it, returning POIs. For now, we'll use mock data.
-    const mockResponse = initialMockPOIs.map((poi) => ({
-      ...poi,
-      id: `${Date.now()}-${poi.id}`, // Generate unique IDs
-      status: 'ai' as const, // All newly detected POIs should have 'ai' status
-    }));
+      if (!response.ok) {
+        throw new Error('Failed to process image');
+      }
 
-    return mockResponse;
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      throw new Error('Failed to process image: ' + (error as Error).message);
+    }
   }
 );
 
