@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import exifr from 'exifr';
 
 interface UploadModalProps {
@@ -73,15 +74,18 @@ const UploadModal: React.FC<UploadModalProps> = ({
       setError('Please select an image file');
     }
   };
-
   const handleUpload = async () => {
     if (selectedFile) {
       try {
+        setError(null);
         onUpload(selectedFile);
         setSelectedFile(null);
         onClose();
       } catch (error) {
-        setError((error as Error).message);
+        setError(
+          error instanceof Error ? error.message : 'Failed to upload image'
+        );
+        console.error('Upload error:', error);
       }
     }
   };
@@ -167,12 +171,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
                 <p className='text-sm text-gray-500'>
                   {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </p>
-              </div>
-              <div className='mt-2'>
-                <img
+              </div>{' '}
+              <div className='mt-2 relative h-40'>
+                <Image
                   src={URL.createObjectURL(selectedFile)}
                   alt='Preview'
-                  className='h-40 mx-auto object-contain rounded-md'
+                  className='mx-auto object-contain rounded-md'
+                  fill
+                  sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
                 />
               </div>
             </div>

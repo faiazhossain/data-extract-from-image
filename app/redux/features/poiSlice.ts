@@ -47,15 +47,14 @@ const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
   };
 };
 
-// Simulate API call to process image and extract POIs
+// Process image through our API endpoint
 export const processImageData = createAsyncThunk(
   'pois/processImage',
   async (imageFile: File) => {
     const formData = new FormData();
     formData.append('file', imageFile);
-
     try {
-      const response = await fetch('https://usage.bmapsbd.com/view', {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
