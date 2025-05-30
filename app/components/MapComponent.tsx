@@ -5,6 +5,7 @@ import Map, {
   NavigationControl,
   MapRef,
   MarkerDragEvent,
+  Popup,
 } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -92,7 +93,7 @@ const MapComponent = ({
   latitude = 23.82229,
   longitude = 90.38367,
   zoom = 14,
-  mapStyle = 'https://map.barikoi.com/styles/osm_barikoi_v2/style.json?key=NDE2NzpVNzkyTE5UMUoy',
+  mapStyle = 'https://map.barikoi.com/styles/barikoi-light/style.json?key=NDE2NzpVNzkyTE5UMUoy',
   onSelectPOI,
 }: MapComponentProps) => {
   // Get POIs from Redux store
@@ -100,7 +101,7 @@ const MapComponent = ({
   const { visiblePOIs, selectedPOI, hoveredPOI } = useAppSelector(
     (state) => state.poi
   );
-  const [showSatellite, setShowSatellite] = useState(false);
+  const [popupInfo, setPopupInfo] = useState<POI | null>(null);
 
   // Handle marker drag end
   const handleDragEnd = (poi: POI, event: MarkerDragEvent) => {
@@ -108,8 +109,14 @@ const MapComponent = ({
     dispatch(
       updatePOI({
         ...poi,
-        longitude: lng,
-        latitude: lat,
+        rupantor: {
+          ...poi.rupantor,
+          geocoded: {
+            ...poi.rupantor.geocoded,
+            latitude: lat.toString(),
+            longitude: lng.toString(),
+          },
+        },
         status: 'verified', // Mark as verified since it was manually positioned
       })
     );
@@ -117,11 +124,6 @@ const MapComponent = ({
 
   // Use a ref to store the map instance
   const mapRef = useRef<MapRef>(null);
-
-  // Store the current map style based on satellite toggle
-  const currentMapStyle = showSatellite
-    ? 'https://api.maptiler.com/maps/dfa2a215-243b-4b69-87ef-ce275b09249c/style.json?key=ASrfqapsZfy4BRFJJdVy'
-    : mapStyle;
 
   // Track newly added POIs for animation
   const [animatedPOIs, setAnimatedPOIs] = useState<Set<string>>(new Set());
@@ -135,119 +137,160 @@ const MapComponent = ({
   useEffect(() => {
     if (visiblePOIs.length > 0) {
       // Find POIs that haven't been animated yet
-      const newPOIs = visiblePOIs.filter((poi) => !animatedPOIs.has(poi.id));
+      const newPOIs = visiblePOIs.filter(
+        (poi) => poi.id && !animatedPOIs.has(poi.id)
+      );
 
       if (newPOIs.length > 0) {
         const newAnimatedPOIs = new Set(animatedPOIs);
-        newPOIs.forEach((poi) => newAnimatedPOIs.add(poi.id));
+        newPOIs.forEach((poi) => {
+          if (poi.id) {
+            newAnimatedPOIs.add(poi.id);
+          }
+        });
         setAnimatedPOIs(newAnimatedPOIs);
       }
     }
   }, [visiblePOIs, animatedPOIs]);
+
   // Create a complete solution with custom icon rendering for each POI type
   const renderPOIs = () => {
     return visiblePOIs.map((poi: POI) => {
+      if (!poi.rupantor?.geocoded) return null;
+
       const isSelected = selectedPOI === poi.id;
       const isHovered = hoveredPOI === poi.id;
       const { component: IconComponent, color } = getIconForCategory(
-        poi.category
+        poi.rupantor.geocoded.pType.toLowerCase()
       );
-      const statusColor = getStatusColor(poi.status);
+      const statusColor = getStatusColor(poi.status || 'ai');
+      const lat = parseFloat(poi.rupantor.geocoded.latitude);
+      const lng = parseFloat(poi.rupantor.geocoded.longitude);
+
       return (
-        <Marker
-          key={poi.id}
-          longitude={poi.longitude}
-          latitude={poi.latitude}
-          anchor='bottom'
-          onClick={() => onSelectPOI && onSelectPOI(poi)}
-          draggable={true}
-          onDragEnd={(event) => handleDragEnd(poi, event)}
-        >
-          <AnimatePresence>
-            <motion.div
-              initial={{ y: -100, opacity: 0, scale: 0.3 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 15,
-                delay: getAnimationDelay(poi.id),
-                duration: 0.8,
-              }}
-              whileHover={{
-                scale: 1.2,
-                y: -5,
-                transition: { duration: 0.2 },
-              }}
-              className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg marker-container transition-all duration-150 ${
-                isSelected ? 'ring-3 ring-blue-500 ring-opacity-75' : ''
-              } ${isHovered ? 'scale-110 shadow-xl' : ''}`}
-              style={{
-                backgroundColor: 'white',
-                border: `${isHovered ? 4 : 3}px solid ${statusColor}`,
-                position: 'relative',
-              }}
-              onMouseEnter={() => dispatch(setHoveredPOI(poi.id))}
-              onMouseLeave={() => dispatch(setHoveredPOI(null))}
+        <React.Fragment key={poi.id || `${lat}-${lng}`}>
+          <Marker
+            longitude={lng}
+            latitude={lat}
+            anchor='bottom'
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              setPopupInfo(poi);
+              if (onSelectPOI) {
+                onSelectPOI(poi);
+              }
+            }}
+            draggable={true}
+            onDragEnd={(event) => handleDragEnd(poi, event)}
+          >
+            <AnimatePresence>
+              <motion.div
+                initial={{ y: -100, opacity: 0, scale: 0.3 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 15,
+                  delay: poi.id ? getAnimationDelay(poi.id) : 0,
+                  duration: 0.8,
+                }}
+                whileHover={{
+                  scale: 1.2,
+                  y: -5,
+                  transition: { duration: 0.2 },
+                }}
+                className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg marker-container transition-all duration-150 ${
+                  isSelected ? 'ring-3 ring-blue-500 ring-opacity-75' : ''
+                } ${isHovered ? 'scale-110 shadow-xl' : ''}`}
+                style={{
+                  backgroundColor: 'white',
+                  border: `${isHovered ? 4 : 3}px solid ${statusColor}`,
+                  position: 'relative',
+                }}
+                onMouseEnter={() => poi.id && dispatch(setHoveredPOI(poi.id))}
+                onMouseLeave={() => dispatch(setHoveredPOI(null))}
+              >
+                <IconComponent className='text-lg' style={{ color }} />
+
+                {/* Show ripple effect for newly added markers */}
+                {poi.id && !animatedPOIs.has(poi.id) && (
+                  <MarkerRipple color={statusColor} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </Marker>
+
+          {popupInfo && popupInfo.id === poi.id && (
+            <Popup
+              longitude={lng}
+              latitude={lat}
+              anchor='bottom'
+              closeOnClick={false}
+              onClose={() => setPopupInfo(null)}
+              className='rounded-lg shadow-lg'
             >
-              {/* Icon for the POI type */}
-              <IconComponent className='text-lg' style={{ color }} />
-
-              {/* Show ripple effect for newly added markers */}
-              {!animatedPOIs.has(poi.id) && (
-                <MarkerRipple color={statusColor} />
-              )}
-
-              {/* Show indicator for selected POI */}
-              {isSelected && (
-                <motion.div
-                  className='absolute -bottom-1 w-3 h-3 bg-blue-500 rounded-full'
-                  initial={{ scale: 0 }}
-                  animate={{ scale: [0, 1.5, 1] }}
-                  transition={{ duration: 0.5 }}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </Marker>
+              <div className='p-3 max-w-sm'>
+                <h3 className='text-lg font-semibold mb-2'>
+                  {poi.rupantor.geocoded.address_short}
+                </h3>
+                <div className='space-y-1 text-sm'>
+                  <p>
+                    <span className='font-medium'>Area:</span>{' '}
+                    {poi.rupantor.geocoded.area}
+                  </p>
+                  <p>
+                    <span className='font-medium'>Road:</span>{' '}
+                    {poi.street_road_name_number}
+                  </p>
+                  <p>
+                    <span className='font-medium'>Type:</span>{' '}
+                    {poi.rupantor.geocoded.pType}
+                  </p>
+                  {poi.rupantor.geocoded.postCode && (
+                    <p>
+                      <span className='font-medium'>Post Code:</span>{' '}
+                      {poi.rupantor.geocoded.postCode}
+                    </p>
+                  )}
+                  <p>
+                    <span className='font-medium'>Confidence:</span>{' '}
+                    {poi.rupantor.confidence_score_percentage}%
+                  </p>
+                </div>
+                <div className='mt-2 pt-2 border-t border-gray-200'>
+                  <p className='text-xs text-gray-500'>
+                    {poi.rupantor.geocoded.Address}
+                  </p>
+                </div>
+              </div>
+            </Popup>
+          )}
+        </React.Fragment>
       );
     });
   };
 
   return (
-    <div className='relative' style={{ width: width, height: height }}>
+    <div style={{ width, height }} className='relative'>
+      {' '}
       <Map
         ref={mapRef}
+        mapStyle={mapStyle}
+        reuseMaps
+        maxZoom={20}
+        minZoom={5}
         initialViewState={{
-          longitude,
-          latitude,
-          zoom,
+          longitude: longitude,
+          latitude: latitude,
+          zoom: zoom,
+          bearing: 0,
+          pitch: 0,
         }}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={currentMapStyle}
       >
-        {/* Navigation Controls */}
-        <NavigationControl position='top-right' />
-
-        {/* POI Markers */}
+        <NavigationControl position='top-right' showCompass showZoom />
         {renderPOIs()}
       </Map>
-
-      {/* Satellite Toggle */}
-      <div className='absolute top-3 left-3 bg-white rounded-md shadow-md p-2'>
-        <label className='inline-flex items-center cursor-pointer'>
-          <input
-            type='checkbox'
-            className='sr-only peer'
-            checked={showSatellite}
-            onChange={() => setShowSatellite(!showSatellite)}
-          />
-          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-          <span className='ms-3 text-sm font-medium text-gray-900'>
-            Satellite
-          </span>
-        </label>
-      </div>
     </div>
   );
 };

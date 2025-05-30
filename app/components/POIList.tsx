@@ -17,7 +17,8 @@ interface POIListProps {
 const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
   const dispatch = useAppDispatch();
   const { visiblePOIs, selectedPOI, hoveredPOI, processingImage } =
-    useAppSelector((state) => state.poi); // Status to color mapping
+    useAppSelector((state) => state.poi);
+
   const getStatusColor = (status: POI['status']) => {
     switch (status) {
       case 'ai':
@@ -59,14 +60,12 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
               </div>
             ) : (
               <>
-                {' '}
                 <Image
                   src='/placeholder-map.svg'
                   alt='Upload Map Image'
                   width={128}
                   height={128}
                   className='mb-6 text-gray-300'
-                  // Next.js Image handles loading errors automatically
                 />
                 <p className='text-gray-600 text-center mb-4'>
                   No points of interest detected yet.
@@ -98,7 +97,10 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
           <ul className='divide-y'>
             {visiblePOIs.map((poi) => (
               <li
-                key={poi.id}
+                key={
+                  poi.id ||
+                  `${poi.rupantor.geocoded.latitude}-${poi.rupantor.geocoded.longitude}`
+                }
                 className={`p-4 hover:bg-gray-50 transition-all duration-150 ${
                   selectedPOI === poi.id ? 'bg-blue-50' : ''
                 } ${
@@ -106,8 +108,8 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                     ? 'bg-blue-100 shadow-md scale-[1.01] transform'
                     : ''
                 }`}
-                onClick={() => handleSelectPOI(poi.id)}
-                onMouseEnter={() => dispatch(setHoveredPOI(poi.id))}
+                onClick={() => poi.id && handleSelectPOI(poi.id)}
+                onMouseEnter={() => poi.id && dispatch(setHoveredPOI(poi.id))}
                 onMouseLeave={() => dispatch(setHoveredPOI(null))}
               >
                 <div className='flex items-start justify-between'>
@@ -118,21 +120,45 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                           poi.status
                         )}`}
                       ></div>
-                      <h3 className='font-medium'>{poi.name}</h3>
+                      <h3 className='font-medium'>
+                        {poi.rupantor.geocoded.address_short}
+                      </h3>
                     </div>
-                    <p className='text-sm text-gray-600 mt-1'>{poi.category}</p>
-                    <div className='mt-1 text-xs text-gray-500'>
+                    <div className='space-y-1 mt-2'>
+                      <p className='text-sm text-gray-600'>
+                        <span className='font-medium'>Area:</span>{' '}
+                        {poi.rupantor.geocoded.area},{' '}
+                        {poi.rupantor.geocoded.sub_area}
+                      </p>
+                      <p className='text-sm text-gray-600'>
+                        <span className='font-medium'>Road:</span>{' '}
+                        {poi.street_road_name_number}
+                      </p>
+                      <p className='text-sm text-gray-600'>
+                        <span className='font-medium'>Type:</span>{' '}
+                        {poi.rupantor.geocoded.pType}
+                      </p>
+                    </div>
+                    <div className='mt-2 text-xs text-gray-500'>
                       <span className='font-medium'>Confidence: </span>
-                      <span>{(poi.confidence * 100).toFixed(1)}%</span>
+                      <span>{poi.rupantor.confidence_score_percentage}%</span>
+                    </div>
+                    <div className='mt-1 text-xs text-gray-400'>
+                      {poi.rupantor.geocoded.postCode && (
+                        <span>
+                          Post Code: {poi.rupantor.geocoded.postCode} •{' '}
+                        </span>
+                      )}
+                      <span>uCode: {poi.rupantor.geocoded.uCode}</span>
                     </div>
                   </div>
 
                   <div className='flex space-x-1'>
-                    {poi.status !== 'verified' && (
+                    {poi.status !== 'verified' && poi.id && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleAccept(poi.id);
+                          handleAccept(poi.id!);
                         }}
                         className='p-1 bg-green-100 hover:bg-green-200 rounded text-green-700 text-xs'
                         title='Accept'
@@ -151,11 +177,11 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                         </svg>
                       </button>
                     )}
-                    {poi.status !== 'rejected' && (
+                    {poi.status !== 'rejected' && poi.id && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleReject(poi.id);
+                          handleReject(poi.id!);
                         }}
                         className='p-1 bg-red-100 hover:bg-red-200 rounded text-red-700 text-xs'
                         title='Reject'
@@ -174,23 +200,25 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                         </svg>
                       </button>
                     )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(poi.id);
-                      }}
-                      className='p-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700 text-xs'
-                      title='Edit'
-                    >
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        className='h-4 w-4'
-                        viewBox='0 0 20 20'
-                        fill='currentColor'
+                    {poi.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(poi.id!);
+                        }}
+                        className='p-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700 text-xs'
+                        title='Edit'
                       >
-                        <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
-                      </svg>
-                    </button>
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          className='h-4 w-4'
+                          viewBox='0 0 20 20'
+                          fill='currentColor'
+                        >
+                          <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
               </li>

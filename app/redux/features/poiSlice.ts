@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { POI } from '../../types';
+import { POI, Rupantor } from '../../types';
+import { v4 as uuidv4 } from 'uuid';
 
 interface POIState {
   pois: POI[];
@@ -12,15 +13,38 @@ interface POIState {
   processingImage: boolean;
 }
 
+interface APIResponsePOI {
+  poi_name: string | null;
+  street_road_name_number: string;
+  address: string;
+  rupantor: Rupantor;
+}
+
+interface APIResponse {
+  result: APIResponsePOI[];
+}
+
 const initialState: POIState = {
-  pois: [], // Start with empty array
-  visiblePOIs: [], // POIs currently visible/animated on the map
+  pois: [],
+  visiblePOIs: [],
   selectedPOI: null,
   hoveredPOI: null,
   loading: false,
   error: null,
-  showUploadPrompt: true, // Show upload prompt by default
+  showUploadPrompt: true,
   processingImage: false,
+};
+
+const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
+  return {
+    id: uuidv4(), // Generate a unique ID for the POI
+    poi_name: poiData.poi_name,
+    street_road_name_number: poiData.street_road_name_number,
+    address: poiData.address,
+    rupantor: poiData.rupantor,
+    status: 'ai', // Initial status
+    category: poiData.rupantor?.geocoded?.pType || 'unknown',
+  };
 };
 
 // Simulate API call to process image and extract POIs
@@ -40,8 +64,10 @@ export const processImageData = createAsyncThunk(
         throw new Error('Failed to process image');
       }
 
-      const data = await response.json();
-      return data;
+      const data = (await response.json()) as APIResponse;
+
+      // Transform the response data into POI objects
+      return data.result.map(formatPOIFromResponse);
     } catch (error) {
       throw new Error('Failed to process image: ' + (error as Error).message);
     }
@@ -55,7 +81,9 @@ export const poiSlice = createSlice({
     // Action to add POIs gradually for animation
     addVisiblePOI: (state, action: PayloadAction<POI>) => {
       state.visiblePOIs.push(action.payload);
-    }, // Action to select a POI
+    },
+
+    // Action to select a POI
     selectPOI: (state, action: PayloadAction<string | null>) => {
       state.selectedPOI = action.payload;
     },
@@ -129,7 +157,9 @@ export const poiSlice = createSlice({
         }
         return poi;
       });
-    }, // Action to clear all data
+    },
+
+    // Action to clear all data
     clearAllData: (state) => {
       state.pois = [];
       state.visiblePOIs = [];
