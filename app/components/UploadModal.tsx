@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import exifr from 'exifr';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -48,10 +49,23 @@ const UploadModal: React.FC<UploadModalProps> = ({
       handleFileSelection(file);
     }
   };
-
-  const handleFileSelection = (file: File) => {
+  const handleFileSelection = async (file: File) => {
     // Check if the file is an image
     if (file.type.startsWith('image/')) {
+      try {
+        // Read EXIF data including GPS
+        const output = await exifr.parse(file, { gps: true });
+        if (output?.latitude && output?.longitude) {
+          console.log('GPS Coordinates from image:', {
+            latitude: output.latitude,
+            longitude: output.longitude,
+          });
+        } else {
+          console.log('No GPS coordinates found in image metadata');
+        }
+      } catch (error) {
+        console.error('Error reading image metadata:', error);
+      }
       setSelectedFile(file);
     } else {
       // Show error for non-image files

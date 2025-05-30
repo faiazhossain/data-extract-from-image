@@ -1,6 +1,11 @@
 'use client';
 import * as React from 'react';
-import Map, { Marker, NavigationControl, MapRef } from 'react-map-gl/maplibre';
+import Map, {
+  Marker,
+  NavigationControl,
+  MapRef,
+  MarkerDragEvent,
+} from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -26,7 +31,7 @@ import '../marker-styles.css';
 // Import types
 import { POI } from '../types';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { setHoveredPOI } from '../redux/features/poiSlice';
+import { setHoveredPOI, updatePOI } from '../redux/features/poiSlice';
 import MarkerRipple from './MarkerRipple';
 
 interface MapComponentProps {
@@ -97,6 +102,19 @@ const MapComponent = ({
   );
   const [showSatellite, setShowSatellite] = useState(false);
 
+  // Handle marker drag end
+  const handleDragEnd = (poi: POI, event: MarkerDragEvent) => {
+    const { lng, lat } = event.lngLat;
+    dispatch(
+      updatePOI({
+        ...poi,
+        longitude: lng,
+        latitude: lat,
+        status: 'verified', // Mark as verified since it was manually positioned
+      })
+    );
+  };
+
   // Use a ref to store the map instance
   const mapRef = useRef<MapRef>(null);
 
@@ -142,6 +160,8 @@ const MapComponent = ({
           latitude={poi.latitude}
           anchor='bottom'
           onClick={() => onSelectPOI && onSelectPOI(poi)}
+          draggable={true}
+          onDragEnd={(event) => handleDragEnd(poi, event)}
         >
           <AnimatePresence>
             <motion.div
@@ -156,7 +176,7 @@ const MapComponent = ({
               }}
               whileHover={{
                 scale: 1.2,
-                y: -5, // Lift the marker slightly on hover
+                y: -5,
                 transition: { duration: 0.2 },
               }}
               className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg marker-container transition-all duration-150 ${
