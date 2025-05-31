@@ -186,9 +186,23 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                       ></div>
                       <div>
                         <h3 className='font-medium font-geist-sans text-gray-900 leading-tight flex items-center gap-2'>
-                          {poi.poi_name || poi.rupantor.geocoded.address_short}{' '}
+                          {' '}
+                          {poi.poi_name ||
+                            poi.rupantor.geocoded.address_short}{' '}
                           {poi.info?.info?.exist && (
-                            <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
+                            <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-600 text-white shadow-md border border-purple-400 animate-pulse gap-1'>
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='h-4 w-4'
+                                viewBox='0 0 20 20'
+                                fill='currentColor'
+                              >
+                                <path
+                                  fillRule='evenodd'
+                                  d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+                                  clipRule='evenodd'
+                                />
+                              </svg>
                               Existing
                             </span>
                           )}

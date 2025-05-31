@@ -69,7 +69,7 @@ const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
     street_road_name_number: poiData.street_road_name_number || '',
     address: poiData.address || '',
     rupantor: poiData.rupantor,
-    info: poiData.info,  // Include the info object
+    info: poiData.info, // Include the info object
     status: 'ai', // Initial status
     location: {
       lat: parseFloat(poiData.rupantor.geocoded.latitude),
