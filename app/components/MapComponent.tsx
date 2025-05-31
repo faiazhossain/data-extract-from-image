@@ -276,7 +276,7 @@ const MapComponent = ({
                 }
               }
             }}
-            draggable={isDragModeEnabled}
+            draggable={isDragModeEnabled && !poi.info?.info?.exist}
             onDragStart={() => handleDragStart(poi)}
             onDragEnd={(event) => handleDragEnd(event, poi)}
           >
@@ -322,8 +322,8 @@ const MapComponent = ({
                     isDragModeEnabled ? 'transform group-hover:scale-110' : ''
                   }`}
                   style={{ color }}
-                />
-                {isDragModeEnabled && !isDragging && (
+                />{' '}
+                {isDragModeEnabled && !isDragging && !poi.info?.info?.exist && (
                   <div className='absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity'>
                     <FaLockOpen className='w-3 h-3 inline-block mr-1' />
                     Draggable
@@ -408,12 +408,14 @@ const MapComponent = ({
                   <p className='text-xs text-gray-500'>
                     {poi.rupantor.geocoded.Address}
                   </p>
-                </div>
+                </div>{' '}
                 {isDragModeEnabled && (
                   <div className='mt-2 pt-2 border-t border-gray-200'>
                     <p className='text-xs text-blue-600'>
                       <FaLockOpen className='w-3 h-3 inline-block mr-1' />
-                      Drag mode enabled - Click and drag to move marker
+                      {poi.info?.info?.exist
+                        ? 'This is an existing POI and cannot be moved'
+                        : 'Drag mode enabled - Click and drag to move marker'}
                     </p>
                   </div>
                 )}

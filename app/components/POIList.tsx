@@ -24,6 +24,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
     processingImage,
     uploadedImage,
     showFullImage,
+    isDragModeEnabled,
   } = useAppSelector((state) => state.poi);
   const getStatusColor = (status: POI['status']) => {
     switch (status) {
@@ -172,29 +173,44 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                           poi.status
                         )}`}
                       ></div>
-                      <div>
-                        <h3 className='font-medium font-geist-sans text-gray-900 leading-tight flex items-center gap-2'>
-                          {' '}
-                          {poi.poi_name ||
-                            poi.rupantor.geocoded.address_short}{' '}
-                          {poi.info?.info?.exist && (
-                            <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-600 text-white shadow-md border border-purple-400 animate-pulse gap-1'>
+                      <div className='w-full'>
+                        <div className='flex items-center justify-between'>
+                          <h3 className='font-medium font-geist-sans text-gray-900 leading-tight flex items-center gap-2'>
+                            {poi.poi_name ||
+                              poi.rupantor.geocoded.address_short}
+                            {poi.info?.info?.exist && (
+                              <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-600 text-white shadow-md border border-purple-400 animate-pulse gap-1'>
+                                <svg
+                                  xmlns='http://www.w3.org/2000/svg'
+                                  className='h-4 w-4'
+                                  viewBox='0 0 20 20'
+                                  fill='currentColor'
+                                >
+                                  <path
+                                    fillRule='evenodd'
+                                    d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+                                    clipRule='evenodd'
+                                  />
+                                </svg>
+                                Existing
+                              </span>
+                            )}
+                          </h3>
+                          {/* Add drag mode message for existing POIs */}
+                          {isDragModeEnabled && poi.info?.info?.exist && (
+                            <span className='text-xs text-gray-500 ml-2 flex items-center gap-1'>
                               <svg
                                 xmlns='http://www.w3.org/2000/svg'
-                                className='h-4 w-4'
+                                className='h-4 w-4 text-gray-400'
                                 viewBox='0 0 20 20'
                                 fill='currentColor'
                               >
-                                <path
-                                  fillRule='evenodd'
-                                  d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                                  clipRule='evenodd'
-                                />
+                                <path d='M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z' />
                               </svg>
-                              Existing
+                              Cannot move
                             </span>
                           )}
-                        </h3>
+                        </div>
                         <div className='space-y-2 mt-3'>
                           <p className='text-sm text-gray-600 flex'>
                             <span className='font-medium w-16'>Area:</span>
