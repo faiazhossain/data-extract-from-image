@@ -241,11 +241,28 @@ export const poiSlice = createSlice({
 
     clearUploadedImage: (state) => {
       state.uploadedImage = null;
-    },
-
-    // Action to enable or disable drag mode
+    }, // Action to enable or disable drag mode
     toggleDragMode: (state) => {
       state.isDragModeEnabled = !state.isDragModeEnabled;
+    },
+
+    // Action to toggle edit permissions for a specific POI
+    togglePoiEditPermission: (state, action: PayloadAction<string>) => {
+      const poiId = action.payload;
+      const poiIndex = state.pois.findIndex((poi) => poi.id === poiId);
+      if (poiIndex !== -1) {
+        state.pois[poiIndex].isEditEnabled =
+          !state.pois[poiIndex].isEditEnabled;
+
+        // Also update in visiblePOIs
+        const visibleIndex = state.visiblePOIs.findIndex(
+          (poi) => poi.id === poiId
+        );
+        if (visibleIndex !== -1) {
+          state.visiblePOIs[visibleIndex].isEditEnabled =
+            !state.visiblePOIs[visibleIndex].isEditEnabled;
+        }
+      }
     },
   },
   extraReducers: (builder) => {
@@ -286,6 +303,7 @@ export const {
   toggleFullImage,
   clearUploadedImage,
   toggleDragMode,
+  togglePoiEditPermission,
 } = poiSlice.actions;
 
 export default poiSlice.reducer;

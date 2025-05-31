@@ -49,6 +49,7 @@ export interface POI {
   poi_name: string | null;
   street_road_name_number: string;
   address: string;
+  isEditEnabled?: boolean; // New field to track edit permissions per POI
   rupantor: Rupantor;
   location: {
     lat: number;

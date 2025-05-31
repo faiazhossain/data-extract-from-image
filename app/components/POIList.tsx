@@ -8,6 +8,7 @@ import {
   selectPOI,
   setHoveredPOI,
   toggleFullImage,
+  togglePoiEditPermission,
 } from '../redux/features/poiSlice';
 
 interface POIListProps {
@@ -165,16 +166,19 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                 onMouseEnter={() => poi.id && dispatch(setHoveredPOI(poi.id))}
                 onMouseLeave={() => dispatch(setHoveredPOI(null))}
               >
-                <div className='flex items-start justify-between'>
-                  <div className='flex-1'>
-                    <div className='flex items-start'>
-                      <div
-                        className={`w-2.5 h-2.5 rounded-full mt-1.5 mr-3 ${getStatusColor(
-                          poi.status
-                        )}`}
-                      ></div>
-                      <div className='w-full'>
-                        <div className='flex items-center justify-between'>
+                {' '}
+                <div className='flex flex-col h-full'>
+                  {/* Header Section */}
+                  <div className='flex items-start'>
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full mt-1.5 mr-3 ${getStatusColor(
+                        poi.status
+                      )}`}
+                    ></div>
+                    <div className='flex-1'>
+                      <div className='flex items-center justify-between'>
+                        {' '}
+                        <div className='flex items-center gap-2'>
                           <h3 className='font-medium font-geist-sans text-gray-900 leading-tight flex items-center gap-2'>
                             {poi.poi_name ||
                               poi.rupantor.geocoded.address_short}
@@ -196,121 +200,174 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                               </span>
                             )}
                           </h3>
-                          {/* Add drag mode message for existing POIs */}
-                          {isDragModeEnabled && poi.info?.info?.exist && (
-                            <span className='text-xs text-gray-500 ml-2 flex items-center gap-1'>
+                          {/* Action Buttons */}
+                          <div className='flex space-x-2 ml-auto'>
+                            {((poi.isEditEnabled && poi.info?.info?.exist) ||
+                              !poi.info?.info?.exist) &&
+                              poi.status !== 'verified' &&
+                              poi.id && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAccept(poi.id!);
+                                  }}
+                                  className='p-1.5 bg-green-50 hover:bg-green-100 rounded-md text-green-600 text-xs transition-colors duration-150'
+                                  title='Accept'
+                                >
+                                  <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    className='h-4 w-4'
+                                    viewBox='0 0 20 20'
+                                    fill='currentColor'
+                                  >
+                                    <path
+                                      fillRule='evenodd'
+                                      d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+                                      clipRule='evenodd'
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                            {((poi.isEditEnabled && poi.info?.info?.exist) ||
+                              !poi.info?.info?.exist) &&
+                              poi.status !== 'rejected' &&
+                              poi.id && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleReject(poi.id!);
+                                  }}
+                                  className='p-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 text-xs transition-colors duration-150'
+                                  title='Reject'
+                                >
+                                  <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    className='h-4 w-4'
+                                    viewBox='0 0 20 20'
+                                    fill='currentColor'
+                                  >
+                                    <path
+                                      fillRule='evenodd'
+                                      d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z'
+                                      clipRule='evenodd'
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                            {((poi.isEditEnabled && poi.info?.info?.exist) ||
+                              !poi.info?.info?.exist) &&
+                              poi.id && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit(poi.id!);
+                                  }}
+                                  className='p-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 text-xs transition-colors duration-150'
+                                  title='Edit'
+                                >
+                                  <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    className='h-4 w-4'
+                                    viewBox='0 0 20 20'
+                                    fill='currentColor'
+                                  >
+                                    <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
+                                  </svg>
+                                </button>
+                              )}
+                          </div>
+                        </div>
+                        {/* Add drag mode message for existing POIs */}
+                        {isDragModeEnabled && poi.info?.info?.exist && (
+                          <span className='text-xs text-gray-500 ml-2 flex items-center gap-1'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='h-4 w-4 text-gray-400'
+                              viewBox='0 0 20 20'
+                              fill='currentColor'
+                            >
+                              {' '}
+                              <path d='M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z' />
+                            </svg>
+                            Cannot move
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Details */}
+                      <div className='space-y-2 mt-3'>
+                        <p className='text-sm text-gray-600 flex'>
+                          <span className='font-medium w-16'>Area:</span>
+                          <span>
+                            {poi.rupantor.geocoded.area}
+                            {poi.rupantor.geocoded.sub_area &&
+                              `, ${poi.rupantor.geocoded.sub_area}`}
+                          </span>
+                        </p>
+                        <p className='text-sm text-gray-600 flex'>
+                          <span className='font-medium w-16'>Road:</span>
+                          <span>{poi.rupantor.geocoded.road_name_number}</span>
+                        </p>
+                        <p className='text-sm text-gray-600 flex'>
+                          <span className='font-medium w-16'>Type:</span>
+                          <span>{poi.rupantor.geocoded.pType}</span>
+                        </p>
+                        {poi.rupantor.geocoded.postCode && (
+                          <p className='text-sm text-gray-600 flex'>
+                            <span className='font-medium w-16'>Post:</span>
+                            <span>{poi.rupantor.geocoded.postCode}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>{' '}
+                  {/* Lock/Unlock Button Section */}
+                  <div className='flex justify-end mt-4'>
+                    {poi.info?.info?.exist && poi.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(togglePoiEditPermission(poi.id!));
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                          poi.isEditEnabled
+                            ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        <div className='flex items-center gap-1'>
+                          {poi.isEditEnabled ? (
+                            <>
                               <svg
                                 xmlns='http://www.w3.org/2000/svg'
-                                className='h-4 w-4 text-gray-400'
+                                className='h-3 w-3'
                                 viewBox='0 0 20 20'
                                 fill='currentColor'
                               >
-                                <path d='M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z' />
+                                <path d='M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 016 0v2h1.05a3 3 0 012.95 2.5 1 1 0 001.9-.5A5 5 0 0010 2z' />
                               </svg>
-                              Cannot move
-                            </span>
+                              <span>Unlocked</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='h-3 w-3'
+                                viewBox='0 0 20 20'
+                                fill='currentColor'
+                              >
+                                <path
+                                  fillRule='evenodd'
+                                  d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z'
+                                  clipRule='evenodd'
+                                />
+                              </svg>
+                              <span>Click to Unlock</span>
+                            </>
                           )}
                         </div>
-                        <div className='space-y-2 mt-3'>
-                          <p className='text-sm text-gray-600 flex'>
-                            <span className='font-medium w-16'>Area:</span>
-                            <span>
-                              {poi.rupantor.geocoded.area}
-                              {poi.rupantor.geocoded.sub_area &&
-                                `, ${poi.rupantor.geocoded.sub_area}`}
-                            </span>
-                          </p>
-                          <p className='text-sm text-gray-600 flex'>
-                            <span className='font-medium w-16'>Road:</span>
-                            <span>
-                              {poi.rupantor.geocoded.road_name_number}
-                            </span>
-                          </p>
-                          <p className='text-sm text-gray-600 flex'>
-                            <span className='font-medium w-16'>Type:</span>
-                            <span>{poi.rupantor.geocoded.pType}</span>
-                          </p>
-                          {poi.rupantor.geocoded.postCode && (
-                            <p className='text-sm text-gray-600 flex'>
-                              <span className='font-medium w-16'>Post:</span>
-                              <span>{poi.rupantor.geocoded.postCode}</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>{' '}
-                  </div>{' '}
-                  <div className='flex space-x-2 mt-4'>
-                    {!poi.info?.info?.exist &&
-                      poi.status !== 'verified' &&
-                      poi.id && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAccept(poi.id!);
-                          }}
-                          className='p-1.5 bg-green-50 hover:bg-green-100 rounded-md text-green-600 text-xs transition-colors duration-150'
-                          title='Accept'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-4 w-4'
-                            viewBox='0 0 20 20'
-                            fill='currentColor'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    {!poi.info?.info?.exist &&
-                      poi.status !== 'rejected' &&
-                      poi.id && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleReject(poi.id!);
-                          }}
-                          className='p-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 text-xs transition-colors duration-150'
-                          title='Reject'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-4 w-4'
-                            viewBox='0 0 20 20'
-                            fill='currentColor'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    {(!poi.info?.info?.exist || poi.status === 'verified') &&
-                      poi.id && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit(poi.id!);
-                          }}
-                          className='p-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 text-xs transition-colors duration-150'
-                          title='Edit'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-4 w-4'
-                            viewBox='0 0 20 20'
-                            fill='currentColor'
-                          >
-                            <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
-                          </svg>
-                        </button>
-                      )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </li>

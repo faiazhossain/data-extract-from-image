@@ -113,12 +113,13 @@ const MapComponent = ({
 
   // Handle marker drag start
   const handleDragStart = (poi: POI) => {
-    if (!isDragModeEnabled) return;
+    if (!isDragModeEnabled || (poi.info?.info?.exist && !poi.isEditEnabled))
+      return;
     setDraggedPOI(poi);
   };
-
   const handleDragEnd = async (e: MarkerDragEvent, poi: POI) => {
-    if (!isDragModeEnabled) return;
+    if (!isDragModeEnabled || (poi.info?.info?.exist && !poi.isEditEnabled))
+      return;
 
     try {
       // Get the reverse geocoding data for the new location
@@ -276,7 +277,9 @@ const MapComponent = ({
                 }
               }
             }}
-            draggable={isDragModeEnabled && !poi.info?.info?.exist}
+            draggable={
+              isDragModeEnabled && (poi.isEditEnabled || !poi.info?.info?.exist)
+            }
             onDragStart={() => handleDragStart(poi)}
             onDragEnd={(event) => handleDragEnd(event, poi)}
           >
