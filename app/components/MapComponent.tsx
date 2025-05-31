@@ -349,6 +349,7 @@ const MapComponent = ({
             >
               <div className='p-3 max-w-sm'>
                 <div className='flex items-center gap-2 mb-2'>
+                  {' '}
                   <h3 className='text-lg font-semibold'>
                     {poi.poi_name || poi.rupantor.geocoded.address_short}
                   </h3>

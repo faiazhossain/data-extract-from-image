@@ -49,8 +49,7 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
         sub_area: poi.rupantor.geocoded.sub_area || '',
         pType: poi.rupantor.geocoded.pType || '',
         address: poi.rupantor.geocoded.address || '',
-        address_short:
-          poi.rupantor.geocoded.address_short || poi.poi_name || '',
+        address_short: poi.poi_name || '',
         latitude: poi.rupantor.geocoded.latitude || '',
         longitude: poi.rupantor.geocoded.longitude || '',
         postCode: poi.rupantor.geocoded.postCode || 0,

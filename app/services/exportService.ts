@@ -11,11 +11,10 @@ export const exportToExcel = (pois: POI[]) => {
 
     if (verifiedPOIs.length === 0) {
       throw new Error('No verified POIs to export');
-    }
-
-    // Transform POIs into a format suitable for Excel
+    } // Transform POIs into a format suitable for Excel
     const data = verifiedPOIs.map((poi) => ({
-      'Short Address': poi.rupantor.geocoded.address_short || '',
+      'Short Address':
+        poi.poi_name || poi.rupantor.geocoded.address_short || '',
       Area: poi.rupantor.geocoded.area || '',
       'Sub Area': poi.rupantor.geocoded.sub_area || '',
       'Road Name/Number': poi.street_road_name_number || '',
