@@ -25,18 +25,6 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
     uploadedImage,
     showFullImage,
   } = useAppSelector((state) => state.poi);
-
-  // Log POIs to check existence status
-  React.useEffect(() => {
-    visiblePOIs.forEach((poi) => {
-      console.log('POI Info:', {
-        name: poi.poi_name,
-        existPath: poi.info?.info?.exist,
-        fullInfo: poi.info,
-      });
-    });
-  }, [visiblePOIs]);
-
   const getStatusColor = (status: POI['status']) => {
     switch (status) {
       case 'ai':
@@ -135,10 +123,10 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                   No points of interest detected yet.
                   <br />
                   Upload an image to begin.
-                </p>
+                </p>{' '}
                 <button
                   onClick={onUploadImage}
-                  className='mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center'
+                  className='mt-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md flex items-center shadow-md transition-colors duration-150'
                 >
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
