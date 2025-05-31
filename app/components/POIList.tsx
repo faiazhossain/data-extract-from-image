@@ -7,6 +7,7 @@ import {
   updatePOIStatus,
   selectPOI,
   setHoveredPOI,
+  toggleFullImage,
 } from '../redux/features/poiSlice';
 
 interface POIListProps {
@@ -16,8 +17,14 @@ interface POIListProps {
 
 const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
   const dispatch = useAppDispatch();
-  const { visiblePOIs, selectedPOI, hoveredPOI, processingImage } =
-    useAppSelector((state) => state.poi);
+  const {
+    visiblePOIs,
+    selectedPOI,
+    hoveredPOI,
+    processingImage,
+    uploadedImage,
+    showFullImage,
+  } = useAppSelector((state) => state.poi);
 
   const getStatusColor = (status: POI['status']) => {
     switch (status) {
@@ -48,8 +55,54 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
     <div className='flex flex-col h-full overflow-hidden'>
       <h2 className='text-xl font-bold px-4 py-3 border-b'>
         Points of Interest
-      </h2>
-
+      </h2>{' '}
+      {uploadedImage && (
+        <div className='p-4 border-b'>
+          <div
+            className='relative w-full h-40 cursor-pointer overflow-hidden rounded-lg'
+            onClick={() => dispatch(toggleFullImage())}
+          >
+            <Image
+              src={uploadedImage.url}
+              alt='Uploaded Image'
+              fill
+              style={{ objectFit: 'cover' }}
+              className='hover:scale-105 transition-transform duration-200'
+            />
+          </div>
+          {uploadedImage.coordinates && (
+            <div className='mt-3 text-sm text-gray-600'>
+              <p className='font-medium mb-1'>Extracted Coordinates:</p>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <span className='font-medium'>Latitude:</span>{' '}
+                  {uploadedImage.coordinates.latitude.toFixed(6)}
+                </div>
+                <div>
+                  <span className='font-medium'>Longitude:</span>{' '}
+                  {uploadedImage.coordinates.longitude.toFixed(6)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {showFullImage && uploadedImage && (
+        <div
+          className='fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4'
+          onClick={() => dispatch(toggleFullImage())}
+        >
+          <div className='relative w-full max-w-4xl h-[80vh]'>
+            <Image
+              src={uploadedImage.url}
+              alt='Full Image'
+              fill
+              style={{ objectFit: 'contain' }}
+              className='rounded-lg'
+            />
+          </div>
+        </div>
+      )}
       <div className='flex-1 overflow-y-auto'>
         {visiblePOIs.length === 0 ? (
           <div className='h-full flex flex-col items-center justify-center p-6'>

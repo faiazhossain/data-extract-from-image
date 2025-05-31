@@ -11,6 +11,15 @@ interface POIState {
   error: string | null;
   showUploadPrompt: boolean;
   processingImage: boolean;
+  uploadedImage: {
+    url: string;
+    file: File | null;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  } | null;
+  showFullImage: boolean;
 }
 
 interface APIResponsePOI {
@@ -33,6 +42,8 @@ const initialState: POIState = {
   error: null,
   showUploadPrompt: true,
   processingImage: false,
+  uploadedImage: null,
+  showFullImage: false,
 };
 
 const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
@@ -166,6 +177,25 @@ export const poiSlice = createSlice({
       state.hoveredPOI = null;
       state.showUploadPrompt = true;
     },
+
+    setUploadedImage: (
+      state,
+      action: PayloadAction<{
+        url: string;
+        file: File;
+        coordinates?: { latitude: number; longitude: number };
+      }>
+    ) => {
+      state.uploadedImage = action.payload;
+    },
+
+    toggleFullImage: (state) => {
+      state.showFullImage = !state.showFullImage;
+    },
+
+    clearUploadedImage: (state) => {
+      state.uploadedImage = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -200,6 +230,9 @@ export const {
   resetVisiblePOIs,
   saveToDatabase,
   clearAllData,
+  setUploadedImage,
+  toggleFullImage,
+  clearUploadedImage,
 } = poiSlice.actions;
 
 export default poiSlice.reducer;

@@ -3,6 +3,8 @@
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import exifr from 'exifr';
+import { useAppDispatch } from '../redux/hooks';
+import { setUploadedImage } from '../redux/features/poiSlice';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onClose,
   onUpload,
 }) => {
+  const dispatch = useAppDispatch();
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,20 +59,29 @@ const UploadModal: React.FC<UploadModalProps> = ({
     // Check if the file is an image
     if (file.type.startsWith('image/')) {
       try {
+        // Create URL for the uploaded image
+        const imageUrl = URL.createObjectURL(file);
+
         // Read EXIF data including GPS
         const output = await exifr.parse(file, { gps: true });
-        if (output?.latitude && output?.longitude) {
-          console.log('GPS Coordinates from image:', {
-            latitude: output.latitude,
-            longitude: output.longitude,
-          });
-        } else {
-          console.log('No GPS coordinates found in image metadata');
-        }
+        const coordinates =
+          output?.latitude && output?.longitude
+            ? { latitude: output.latitude, longitude: output.longitude }
+            : undefined;
+
+        // Save image and coordinates to Redux store
+        dispatch(
+          setUploadedImage({
+            url: imageUrl,
+            file,
+            coordinates,
+          })
+        );
+        setSelectedFile(file);
       } catch (error) {
         console.error('Error reading image metadata:', error);
+        setError('Error processing image metadata');
       }
-      setSelectedFile(file);
     } else {
       setError('Please select an image file');
     }
