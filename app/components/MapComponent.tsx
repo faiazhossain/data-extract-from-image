@@ -12,6 +12,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { RootState } from '../redux/store';
+import { FaLockOpen } from 'react-icons/fa';
 
 // Import icons
 import {
@@ -54,8 +55,8 @@ const getStatusColor = (status: POI['status']) => {
       return '#FFCC00'; // Yellow
     case 'verified':
       return '#22C55E'; // Green
-    case 'rejected':
-      return '#EF4444'; // Red
+    case 'edited':
+      return '#6366F1'; // Indigo
     default:
       return '#FFCC00'; // Default yellow
   }
@@ -98,37 +99,43 @@ const MapComponent = ({
   mapStyle = 'https://map.barikoi.com/styles/barikoi-light/style.json?key=NDE2NzpVNzkyTE5UMUoy',
   onSelectPOI,
 }: MapComponentProps) => {
-  // Get POIs from Redux store
+  const mapRef = useRef<MapRef>(null);
   const dispatch = useAppDispatch();
-  const { visiblePOIs, selectedPOI, hoveredPOI } = useAppSelector(
-    (state: RootState) => state.poi
-  );
+  const { visiblePOIs, selectedPOI, hoveredPOI, isDragModeEnabled } =
+    useAppSelector((state: RootState) => state.poi);
   const [popupInfo, setPopupInfo] = useState<POI | null>(null);
+  const [draggedPOI, setDraggedPOI] = useState<POI | null>(null);
 
-  // Handle marker drag end
-  const handleDragEnd = (poi: POI, event: MarkerDragEvent) => {
-    const { lng, lat } = event.lngLat;
-    dispatch(
-      updatePOI({
-        ...poi,
-        rupantor: {
-          ...poi.rupantor,
-          geocoded: {
-            ...poi.rupantor.geocoded,
-            latitude: lat.toString(),
-            longitude: lng.toString(),
-          },
-        },
-        status: 'verified', // Mark as verified since it was manually positioned
-      })
-    );
+  // Handle marker drag start
+  const handleDragStart = (poi: POI) => {
+    if (!isDragModeEnabled) return;
+    setDraggedPOI(poi);
   };
 
-  // Use a ref to store the map instance
-  const mapRef = useRef<MapRef>(null);
+  // Handle marker drag end
+  const handleDragEnd = (e: MarkerDragEvent, poi: POI) => {
+    if (!isDragModeEnabled) return;
+
+    const updatedPoi = {
+      ...poi,
+      rupantor: {
+        ...poi.rupantor,
+        geocoded: {
+          ...poi.rupantor.geocoded,
+          latitude: e.lngLat.lat.toString(),
+          longitude: e.lngLat.lng.toString(),
+        },
+      },
+      status: 'edited' as POI['status'], // Update status when coordinates are changed
+    };
+
+    dispatch(updatePOI(updatedPoi));
+    setDraggedPOI(null);
+  };
 
   // Track newly added POIs for animation
   const [animatedPOIs, setAnimatedPOIs] = useState<Set<string>>(new Set());
+
   // Function to calculate animation delay based on index for staggered animation
   const getAnimationDelay = (poiId: string) => {
     const index = visiblePOIs.findIndex((poi) => poi.id === poiId);
@@ -188,12 +195,14 @@ const MapComponent = ({
 
       const isSelected = selectedPOI === poi.id;
       const isHovered = hoveredPOI === poi.id;
+      const isDragging = draggedPOI?.id === poi.id;
       const { component: IconComponent, color } = getIconForCategory(
         poi.rupantor.geocoded.pType.toLowerCase()
       );
-      const statusColor = getStatusColor(poi.status || 'ai');
+
       const lat = parseFloat(poi.rupantor.geocoded.latitude);
       const lng = parseFloat(poi.rupantor.geocoded.longitude);
+      const statusColor = getStatusColor(poi.status || 'ai');
 
       return (
         <React.Fragment key={poi.id || `${lat}-${lng}`}>
@@ -203,18 +212,25 @@ const MapComponent = ({
             anchor='bottom'
             onClick={(e) => {
               e.originalEvent.stopPropagation();
-              setPopupInfo(poi);
-              if (onSelectPOI) {
-                onSelectPOI(poi);
+              if (!isDragging) {
+                setPopupInfo(poi);
+                if (onSelectPOI) {
+                  onSelectPOI(poi);
+                }
               }
             }}
-            draggable={true}
-            onDragEnd={(event) => handleDragEnd(poi, event)}
+            draggable={isDragModeEnabled}
+            onDragStart={() => handleDragStart(poi)}
+            onDragEnd={(event) => handleDragEnd(event, poi)}
           >
             <AnimatePresence>
               <motion.div
                 initial={{ y: -100, opacity: 0, scale: 0.3 }}
-                animate={{ y: 0, opacity: 1, scale: 1 }}
+                animate={{
+                  y: 0,
+                  opacity: 1,
+                  scale: isDragging ? 1.3 : 1,
+                }}
                 transition={{
                   type: 'spring',
                   stiffness: 300,
@@ -223,23 +239,39 @@ const MapComponent = ({
                   duration: 0.8,
                 }}
                 whileHover={{
-                  scale: 1.2,
+                  scale: isDragModeEnabled ? 1.3 : 1.2,
                   y: -5,
                   transition: { duration: 0.2 },
                 }}
-                className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg marker-container transition-all duration-150 ${
+                className={`w-12 h-12 rounded-full flex items-center justify-center cursor-${
+                  isDragModeEnabled ? 'move' : 'pointer'
+                } shadow-lg marker-container group transition-all duration-150 ${
                   isSelected ? 'ring-3 ring-blue-500 ring-opacity-75' : ''
-                } ${isHovered ? 'scale-110 shadow-xl' : ''}`}
+                } ${isHovered ? 'scale-110 shadow-xl' : ''} ${
+                  isDragModeEnabled ? 'hover:shadow-2xl' : ''
+                }`}
                 style={{
                   backgroundColor: 'white',
-                  border: `${isHovered ? 4 : 3}px solid ${statusColor}`,
+                  border: `${
+                    isHovered || isDragging ? 4 : 3
+                  }px solid ${statusColor}`,
                   position: 'relative',
                 }}
                 onMouseEnter={() => poi.id && dispatch(setHoveredPOI(poi.id))}
                 onMouseLeave={() => dispatch(setHoveredPOI(null))}
               >
-                <IconComponent className='text-lg' style={{ color }} />
-
+                <IconComponent
+                  className={`text-lg transition-transform ${
+                    isDragModeEnabled ? 'transform group-hover:scale-110' : ''
+                  }`}
+                  style={{ color }}
+                />
+                {isDragModeEnabled && !isDragging && (
+                  <div className='absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity'>
+                    <FaLockOpen className='w-3 h-3 inline-block mr-1' />
+                    Draggable
+                  </div>
+                )}
                 {/* Show ripple effect for newly added markers */}
                 {poi.id && !animatedPOIs.has(poi.id) && (
                   <MarkerRipple color={statusColor} />
@@ -256,6 +288,7 @@ const MapComponent = ({
               closeOnClick={false}
               onClose={() => setPopupInfo(null)}
               className='rounded-lg shadow-lg'
+              offset={[0, -40]}
             >
               <div className='p-3 max-w-sm'>
                 <h3 className='text-lg font-semibold mb-2'>
@@ -290,6 +323,14 @@ const MapComponent = ({
                     {poi.rupantor.geocoded.Address}
                   </p>
                 </div>
+                {isDragModeEnabled && (
+                  <div className='mt-2 pt-2 border-t border-gray-200'>
+                    <p className='text-xs text-blue-600'>
+                      <FaLockOpen className='w-3 h-3 inline-block mr-1' />
+                      Drag mode enabled - Click and drag to move marker
+                    </p>
+                  </div>
+                )}
               </div>
             </Popup>
           )}

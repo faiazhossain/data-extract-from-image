@@ -49,6 +49,9 @@ export interface POI {
   street_road_name_number: string;
   address: string;
   rupantor: Rupantor;
-  status?: 'ai' | 'verified' | 'rejected'; // Added for UI state
-  category?: string; // Added for UI categorization
+  location: {
+    lat: number;
+    lng: number;
+  };
+  status?: 'ai' | 'verified' | 'edited' | 'rejected';
 }

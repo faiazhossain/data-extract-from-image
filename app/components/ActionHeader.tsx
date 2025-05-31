@@ -1,5 +1,11 @@
 'use client';
 import React from 'react';
+import { BiImageAdd, BiScan } from 'react-icons/bi';
+import { FiDownload } from 'react-icons/fi';
+import { MdOutlineDragIndicator } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { toggleDragMode } from '../redux/features/poiSlice';
 
 interface ActionHeaderProps {
   onUploadImage: () => void;
@@ -16,40 +22,72 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
   isProcessing = false,
   hasData = false,
 }) => {
-  return (
-    <header className='bg-white border-b border-gray-200 px-4 py-3'>
-      <div className='flex items-center justify-between'>
-        <h1 className='text-xl font-bold'>Image POI Extractor</h1>
+  const dispatch = useDispatch();
+  const isDragModeEnabled = useSelector(
+    (state: RootState) => state.poi.isDragModeEnabled
+  );
+  const hasVerifiedPOIs = useSelector((state: RootState) =>
+    state.poi.visiblePOIs.some((poi) => poi.status === 'verified')
+  );
 
-        <div className='flex space-x-3'>
+  return (
+    <header className='bg-white border-b border-gray-200 px-6 py-4 shadow-sm'>
+      <div className='flex items-center justify-between max-w-[1920px] mx-auto'>
+        <div className='flex items-center space-x-2'>
+          <h1 className='text-2xl font-bold font-geist-sans tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+            Image POI Extractor
+          </h1>
+        </div>
+
+        <div className='flex items-center space-x-4'>
+          <button
+            onClick={() => dispatch(toggleDragMode())}
+            className={`px-4 py-2 ${
+              isDragModeEnabled
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            } border rounded-lg text-sm font-medium flex items-center transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none disabled:hover:shadow-none disabled:hover:translate-y-0`}
+            disabled={isProcessing || !hasData}
+            title={
+              !hasData
+                ? 'Upload an image to enable drag mode'
+                : isDragModeEnabled
+                ? 'Click to disable drag mode'
+                : 'Click to enable drag mode'
+            }
+          >
+            <MdOutlineDragIndicator
+              className={`w-5 h-5 mr-2 transition-colors duration-200 ${
+                isDragModeEnabled ? 'text-white' : 'text-gray-600'
+              }`}
+            />
+            <span className='relative'>
+              {isDragModeEnabled ? 'Disable' : 'Enable'} Drag
+              {isDragModeEnabled && (
+                <span className='absolute -top-1 -right-1.5 flex h-2 w-2'>
+                  <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-200 opacity-75'></span>
+                  <span className='relative inline-flex rounded-full h-2 w-2 bg-white'></span>
+                </span>
+              )}
+            </span>
+          </button>
           <button
             onClick={onUploadImage}
-            className='px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-medium flex items-center'
+            className='px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium flex items-center transition-all duration-200 shadow-sm hover:shadow'
             disabled={isProcessing}
           >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-4 w-4 mr-1.5'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path
-                fillRule='evenodd'
-                d='M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z'
-                clipRule='evenodd'
-              />
-            </svg>
+            <BiImageAdd className='w-5 h-5 mr-2 text-gray-600' />
             Upload Image
           </button>
           <button
             onClick={onRunDetection}
-            className='px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center'
+            className='px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg text-sm font-medium flex items-center transition-all duration-200 shadow-sm hover:shadow'
             disabled={isProcessing}
           >
             {isProcessing ? (
               <>
                 <svg
-                  className='animate-spin -ml-1 mr-2 h-4 w-4 text-white'
+                  className='animate-spin -ml-1 mr-2 h-5 w-5 text-white'
                   xmlns='http://www.w3.org/2000/svg'
                   fill='none'
                   viewBox='0 0 24 24'
@@ -72,36 +110,28 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
               </>
             ) : (
               <>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  className='h-4 w-4 mr-1.5'
-                  viewBox='0 0 20 20'
-                  fill='currentColor'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z'
-                    clipRule='evenodd'
-                  />
-                </svg>
+                <BiScan className='w-5 h-5 mr-2' />
                 Run Detection
               </>
             )}
-          </button>{' '}
+          </button>
           <button
             onClick={onSaveToDb}
-            className='px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed'
-            disabled={isProcessing || !hasData}
+            className='px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg text-sm font-medium flex items-center transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none'
+            disabled={isProcessing || !hasVerifiedPOIs}
+            title={
+              !hasVerifiedPOIs
+                ? 'Verify POIs before exporting'
+                : 'Export verified POIs to Excel'
+            }
           >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-4 w-4 mr-1.5'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path d='M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z' />
-            </svg>
+            <FiDownload className='w-5 h-5 mr-2' />
             Export to Excel
+            {hasData && !hasVerifiedPOIs && (
+              <span className='ml-2 bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full'>
+                Verify First
+              </span>
+            )}
           </button>
         </div>
       </div>

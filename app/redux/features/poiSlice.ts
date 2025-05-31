@@ -21,6 +21,7 @@ interface POIState {
     };
   } | null;
   showFullImage: boolean;
+  isDragModeEnabled: boolean;
 }
 
 interface APIResponsePOI {
@@ -45,6 +46,7 @@ const initialState: POIState = {
   processingImage: false,
   uploadedImage: null,
   showFullImage: false,
+  isDragModeEnabled: false,
 };
 
 const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
@@ -55,7 +57,10 @@ const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
     address: poiData.address,
     rupantor: poiData.rupantor,
     status: 'ai', // Initial status
-    category: poiData.rupantor?.geocoded?.pType || 'unknown',
+    location: {
+      lat: parseFloat(poiData.rupantor.geocoded.latitude),
+      lng: parseFloat(poiData.rupantor.geocoded.longitude),
+    },
   };
 };
 
@@ -109,7 +114,7 @@ export const poiSlice = createSlice({
       state,
       action: PayloadAction<{
         id: string;
-        status: 'ai' | 'verified' | 'rejected';
+        status: POI['status'];
       }>
     ) => {
       const { id, status } = action.payload;
@@ -165,27 +170,29 @@ export const poiSlice = createSlice({
         // Also update visiblePOIs to reflect changes
         state.visiblePOIs = state.visiblePOIs.map((poi) => {
           if (poi.status === 'ai') {
-            return { ...poi, status: 'verified' };
+            return { ...poi, status: 'verified' as POI['status'] };
           }
           return poi;
         });
-      } catch (error) {
-        console.error('Failed to export POIs:', error);
+      } catch (error: unknown) {
+        console.error(
+          'Failed to export POIs:',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
       }
     },
 
     // Action to export POIs to Excel
     exportPOIsToExcel: (state) => {
-      // Call the export service (assuming it returns a promise)
-      exportToExcel(state.pois)
-        .then(() => {
-          // Handle successful export, e.g., show a notification
-          console.log('Exported successfully');
-        })
-        .catch((error) => {
-          // Handle export error
-          console.error('Export failed', error);
-        });
+      try {
+        exportToExcel([...state.pois]);
+        console.log('Exported successfully');
+      } catch (error: unknown) {
+        console.error(
+          'Export failed:',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      }
     },
 
     // Action to clear all data
@@ -214,6 +221,11 @@ export const poiSlice = createSlice({
 
     clearUploadedImage: (state) => {
       state.uploadedImage = null;
+    },
+
+    // Action to enable or disable drag mode
+    toggleDragMode: (state) => {
+      state.isDragModeEnabled = !state.isDragModeEnabled;
     },
   },
   extraReducers: (builder) => {
@@ -253,6 +265,7 @@ export const {
   setUploadedImage,
   toggleFullImage,
   clearUploadedImage,
+  toggleDragMode,
 } = poiSlice.actions;
 
 export default poiSlice.reducer;

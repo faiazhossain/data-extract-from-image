@@ -21,6 +21,8 @@ const AppContent = () => {
   const { pois, visiblePOIs, processingImage } = useAppSelector(
     (state) => state.poi
   );
+  // Check if there are any POIs available (for drag mode)
+  const hasAnyPOIs = visiblePOIs.length > 0;
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingPOI, setEditingPOI] = useState<POI | null>(null);
@@ -91,7 +93,7 @@ const AppContent = () => {
         onRunDetection={handleRunDetection}
         onSaveToDb={handleSaveToDb}
         isProcessing={processingImage}
-        hasData={pois.length > 0}
+        hasData={hasAnyPOIs}
       />
       <div className='flex flex-1 overflow-hidden'>
         {/* Left side - Map */}
@@ -100,7 +102,7 @@ const AppContent = () => {
         </div>
 
         {/* Right side - POI List */}
-        <div className='w-96 border-l border-gray-200 bg-white shadow-md'>
+        <div className='w-[420px] border-l border-gray-200 bg-white shadow-md'>
           <POIList onUploadImage={handleUploadImage} onEdit={handleEdit} />
         </div>
       </div>

@@ -52,8 +52,8 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
   };
 
   return (
-    <div className='flex flex-col h-full overflow-hidden'>
-      <h2 className='text-xl font-bold px-4 py-3 border-b'>
+    <div className='flex flex-col h-full overflow-hidden bg-gray-50'>
+      <h2 className='text-xl font-bold px-6 py-4 bg-white border-b border-gray-200 font-geist-sans tracking-tight'>
         Points of Interest
       </h2>{' '}
       {uploadedImage && (
@@ -147,18 +147,18 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
             )}
           </div>
         ) : (
-          <ul className='divide-y'>
+          <ul className='divide-y divide-gray-200 bg-white'>
             {visiblePOIs.map((poi) => (
               <li
                 key={
                   poi.id ||
                   `${poi.rupantor.geocoded.latitude}-${poi.rupantor.geocoded.longitude}`
                 }
-                className={`p-4 hover:bg-gray-50 transition-all duration-150 ${
-                  selectedPOI === poi.id ? 'bg-blue-50' : ''
+                className={`p-6 hover:bg-gray-50 transition-all duration-150 ${
+                  selectedPOI === poi.id ? 'bg-blue-50/70' : ''
                 } ${
                   hoveredPOI === poi.id
-                    ? 'bg-blue-100 shadow-md scale-[1.01] transform'
+                    ? 'bg-blue-50 shadow-md scale-[1.01] transform'
                     : ''
                 }`}
                 onClick={() => poi.id && handleSelectPOI(poi.id)}
@@ -167,53 +167,65 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
               >
                 <div className='flex items-start justify-between'>
                   <div className='flex-1'>
-                    <div className='flex items-center'>
+                    {' '}
+                    <div className='flex items-start'>
                       <div
-                        className={`w-3 h-3 rounded-full mr-2 ${getStatusColor(
+                        className={`w-2.5 h-2.5 rounded-full mt-1.5 mr-3 ${getStatusColor(
                           poi.status
                         )}`}
                       ></div>
-                      <h3 className='font-medium'>
-                        {poi.rupantor.geocoded.address_short}
-                      </h3>
+                      <div>
+                        <h3 className='font-medium font-geist-sans text-gray-900 leading-tight'>
+                          {poi.rupantor.geocoded.address_short}
+                        </h3>
+                        <div className='space-y-2 mt-3'>
+                          <p className='text-sm text-gray-600 flex'>
+                            <span className='font-medium w-16'>Area:</span>
+                            <span>
+                              {poi.rupantor.geocoded.area},{' '}
+                              {poi.rupantor.geocoded.sub_area}
+                            </span>
+                          </p>
+                          <p className='text-sm text-gray-600 flex'>
+                            <span className='font-medium w-16'>Road:</span>
+                            <span>{poi.street_road_name_number}</span>
+                          </p>
+                          <p className='text-sm text-gray-600 flex'>
+                            <span className='font-medium w-16'>Type:</span>
+                            <span>{poi.rupantor.geocoded.pType}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>{' '}
+                    <div className='mt-3 text-xs'>
+                      <div className='flex items-center space-x-3 text-gray-500'>
+                        <div>
+                          <span className='font-medium'>Confidence:</span>{' '}
+                          <span className='text-blue-600 font-medium'>
+                            {poi.rupantor.confidence_score_percentage}%
+                          </span>
+                        </div>
+                        {poi.rupantor.geocoded.postCode && (
+                          <div>
+                            <span className='font-medium'>Post Code:</span>{' '}
+                            <span>{poi.rupantor.geocoded.postCode}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className='mt-1 text-gray-400'>
+                        <span className='font-medium'>uCode:</span>{' '}
+                        <span>{poi.rupantor.geocoded.uCode}</span>
+                      </div>
                     </div>
-                    <div className='space-y-1 mt-2'>
-                      <p className='text-sm text-gray-600'>
-                        <span className='font-medium'>Area:</span>{' '}
-                        {poi.rupantor.geocoded.area},{' '}
-                        {poi.rupantor.geocoded.sub_area}
-                      </p>
-                      <p className='text-sm text-gray-600'>
-                        <span className='font-medium'>Road:</span>{' '}
-                        {poi.street_road_name_number}
-                      </p>
-                      <p className='text-sm text-gray-600'>
-                        <span className='font-medium'>Type:</span>{' '}
-                        {poi.rupantor.geocoded.pType}
-                      </p>
-                    </div>
-                    <div className='mt-2 text-xs text-gray-500'>
-                      <span className='font-medium'>Confidence: </span>
-                      <span>{poi.rupantor.confidence_score_percentage}%</span>
-                    </div>
-                    <div className='mt-1 text-xs text-gray-400'>
-                      {poi.rupantor.geocoded.postCode && (
-                        <span>
-                          Post Code: {poi.rupantor.geocoded.postCode} •{' '}
-                        </span>
-                      )}
-                      <span>uCode: {poi.rupantor.geocoded.uCode}</span>
-                    </div>
-                  </div>
-
-                  <div className='flex space-x-1'>
+                  </div>{' '}
+                  <div className='flex space-x-2 mt-4'>
                     {poi.status !== 'verified' && poi.id && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleAccept(poi.id!);
                         }}
-                        className='p-1 bg-green-100 hover:bg-green-200 rounded text-green-700 text-xs'
+                        className='p-1.5 bg-green-50 hover:bg-green-100 rounded-md text-green-600 text-xs transition-colors duration-150'
                         title='Accept'
                       >
                         <svg
@@ -236,7 +248,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                           e.stopPropagation();
                           handleReject(poi.id!);
                         }}
-                        className='p-1 bg-red-100 hover:bg-red-200 rounded text-red-700 text-xs'
+                        className='p-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 text-xs transition-colors duration-150'
                         title='Reject'
                       >
                         <svg
@@ -259,7 +271,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                           e.stopPropagation();
                           onEdit(poi.id!);
                         }}
-                        className='p-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700 text-xs'
+                        className='p-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 text-xs transition-colors duration-150'
                         title='Edit'
                       >
                         <svg
