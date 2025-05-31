@@ -36,6 +36,7 @@ import '../marker-styles.css';
 import { POI } from '../types';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { setHoveredPOI, updatePOI } from '../redux/features/poiSlice';
+import { getReverseGeocode } from '../services/barikoiService';
 import MarkerRipple from './MarkerRipple';
 
 interface MapComponentProps {
@@ -116,25 +117,77 @@ const MapComponent = ({
     setDraggedPOI(poi);
   };
 
-  // Handle marker drag end
-  const handleDragEnd = (e: MarkerDragEvent, poi: POI) => {
+  const handleDragEnd = async (e: MarkerDragEvent, poi: POI) => {
     if (!isDragModeEnabled) return;
 
-    const updatedPoi = {
-      ...poi,
-      rupantor: {
-        ...poi.rupantor,
-        geocoded: {
-          ...poi.rupantor.geocoded,
-          latitude: e.lngLat.lat.toString(),
-          longitude: e.lngLat.lng.toString(),
-        },
-      },
-      status: 'edited' as POI['status'], // Update status when coordinates are changed
-    };
+    try {
+      // Get the reverse geocoding data for the new location
+      const geoData = await getReverseGeocode(e.lngLat.lat, e.lngLat.lng);
 
-    dispatch(updatePOI(updatedPoi));
-    setDraggedPOI(null);
+      const updatedPoi = {
+        ...poi,
+        rupantor: {
+          ...poi.rupantor,
+          geocoded: {
+            ...poi.rupantor.geocoded,
+            latitude: e.lngLat.lat.toString(),
+            longitude: e.lngLat.lng.toString(),
+            // Update address info from reverse geocoding
+            area: geoData.place.area || poi.rupantor.geocoded.area,
+            sub_area:
+              geoData.place.sub_district || poi.rupantor.geocoded.sub_area,
+            address: geoData.place.address || poi.rupantor.geocoded.Address,
+            Address: geoData.place.address || poi.rupantor.geocoded.Address,
+            address_short:
+              geoData.place.location_type && geoData.place.address
+                ? `${geoData.place.location_type} - ${geoData.place.address}`
+                : geoData.place.address || poi.rupantor.geocoded.address_short,
+            city: geoData.place.city || poi.rupantor.geocoded.city,
+            district: geoData.place.district || poi.rupantor.geocoded.district,
+            thana: geoData.place.thana || poi.rupantor.geocoded.thana,
+            postCode: geoData.place.postCode
+              ? parseInt(geoData.place.postCode)
+              : poi.rupantor.geocoded.postCode,
+            road_name_number:
+              geoData.place.address_components.road ||
+              poi.rupantor.geocoded.road_name_number,
+            pType: geoData.place.location_type || poi.rupantor.geocoded.pType,
+            address_bn:
+              geoData.place.bangla?.address || poi.rupantor.geocoded.address_bn,
+            unions: geoData.place.union || poi.rupantor.geocoded.unions,
+          },
+        },
+        location: {
+          lat: e.lngLat.lat,
+          lng: e.lngLat.lng,
+        },
+        status: 'edited' as POI['status'],
+      };
+
+      dispatch(updatePOI(updatedPoi));
+    } catch (error) {
+      console.error('Error fetching reverse geocode:', error);
+      // If reverse geocoding fails, just update the coordinates
+      const updatedPoi = {
+        ...poi,
+        rupantor: {
+          ...poi.rupantor,
+          geocoded: {
+            ...poi.rupantor.geocoded,
+            latitude: e.lngLat.lat.toString(),
+            longitude: e.lngLat.lng.toString(),
+          },
+        },
+        location: {
+          lat: e.lngLat.lat,
+          lng: e.lngLat.lng,
+        },
+        status: 'edited' as POI['status'],
+      };
+      dispatch(updatePOI(updatedPoi));
+    } finally {
+      setDraggedPOI(null);
+    }
   };
 
   // Track newly added POIs for animation

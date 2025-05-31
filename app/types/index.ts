@@ -1,5 +1,6 @@
 export interface Geocoded {
   Address: string;
+  address: string;
   address_bn: string;
   address_short: string;
   area: string;

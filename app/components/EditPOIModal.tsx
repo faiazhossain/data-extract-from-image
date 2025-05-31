@@ -13,10 +13,13 @@ interface EditFormData {
   area: string;
   sub_area: string;
   pType: string;
+  address: string;
   address_short: string;
   latitude: string;
   longitude: string;
   postCode: number;
+  city: string;
+  road_name_number: string;
 }
 
 const EditPOIModal: React.FC<EditPOIModalProps> = ({
@@ -29,11 +32,15 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
     area: '',
     sub_area: '',
     pType: '',
+    address: '',
     address_short: '',
     latitude: '',
     longitude: '',
     postCode: 0,
+    city: '',
+    road_name_number: '',
   });
+
   useEffect(() => {
     if (poi) {
       setFormData({
@@ -41,11 +48,14 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
         area: poi.rupantor.geocoded.area || '',
         sub_area: poi.rupantor.geocoded.sub_area || '',
         pType: poi.rupantor.geocoded.pType || '',
+        address: poi.rupantor.geocoded.address || '',
         address_short:
-          poi.poi_name || poi.rupantor.geocoded.address_short || '',
+          poi.rupantor.geocoded.address_short || poi.poi_name || '',
         latitude: poi.rupantor.geocoded.latitude || '',
         longitude: poi.rupantor.geocoded.longitude || '',
         postCode: poi.rupantor.geocoded.postCode || 0,
+        city: poi.rupantor.geocoded.city || '',
+        road_name_number: poi.rupantor.geocoded.road_name_number || '',
       });
     }
   }, [poi]);

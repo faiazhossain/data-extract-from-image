@@ -147,20 +147,26 @@ export const poiSlice = createSlice({
       }
     },
 
-    // Action to update a POI's details
+    // Action to update a POI's details with reverse geocoding
     updatePOI: (state, action: PayloadAction<POI>) => {
       const updatedPOI = action.payload;
       const poiIndex = state.pois.findIndex((poi) => poi.id === updatedPOI.id);
 
       if (poiIndex !== -1) {
-        state.pois[poiIndex] = updatedPOI;
+        state.pois[poiIndex] = {
+          ...updatedPOI,
+          status: 'edited',
+        };
 
         // Also update in visiblePOIs
         const visibleIndex = state.visiblePOIs.findIndex(
           (poi) => poi.id === updatedPOI.id
         );
         if (visibleIndex !== -1) {
-          state.visiblePOIs[visibleIndex] = updatedPOI;
+          state.visiblePOIs[visibleIndex] = {
+            ...updatedPOI,
+            status: 'edited',
+          };
         }
       }
     },
