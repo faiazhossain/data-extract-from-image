@@ -54,4 +54,17 @@ export interface POI {
     lng: number;
   };
   status?: 'ai' | 'verified' | 'edited' | 'rejected';
+  info?: {
+    predict_doc: {
+      poi_name: string | null;
+      street_road_name_number: string | null;
+      address: string | null;
+      rupantor: Rupantor;
+    };
+    info: {
+      exist: boolean;
+      latitude: number;
+      longitude: number;
+    };
+  };
 }

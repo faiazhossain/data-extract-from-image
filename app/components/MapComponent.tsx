@@ -48,21 +48,9 @@ interface MapComponentProps {
   onSelectPOI?: (poi: POI) => void;
 }
 
-// Status color mapping
-const getStatusColor = (status: POI['status']) => {
-  switch (status) {
-    case 'ai':
-      return '#FFCC00'; // Yellow
-    case 'verified':
-      return '#22C55E'; // Green
-    case 'edited':
-      return '#6366F1'; // Indigo
-    default:
-      return '#FFCC00'; // Default yellow
-  }
-};
+const getIconForCategory = (category?: string) => {
+  if (!category) return { component: FaMapMarkerAlt, color: '#555555' };
 
-const getIconForCategory = (category: string) => {
   switch (category.toLowerCase()) {
     case 'healthcare':
       return { component: FaHospital, color: '#FF5757' };
@@ -87,6 +75,22 @@ const getIconForCategory = (category: string) => {
       return { component: FaHome, color: '#607D8B' };
     default:
       return { component: FaMapMarkerAlt, color: '#555555' };
+  }
+};
+
+// Status color mapping
+const getStatusColor = (status: POI['status']) => {
+  switch (status) {
+    case 'ai':
+      return '#FFCC00'; // Yellow
+    case 'verified':
+      return '#22C55E'; // Green
+    case 'edited':
+      return '#6366F1'; // Indigo
+    case 'rejected':
+      return '#EF4444'; // Red
+    default:
+      return '#FFCC00'; // Default yellow
   }
 };
 
@@ -291,22 +295,39 @@ const MapComponent = ({
               offset={[0, -40]}
             >
               <div className='p-3 max-w-sm'>
-                <h3 className='text-lg font-semibold mb-2'>
-                  {poi.rupantor.geocoded.address_short}
-                </h3>
+                <div className='flex items-center gap-2 mb-2'>
+                  <h3 className='text-lg font-semibold'>
+                    {poi.poi_name || poi.rupantor.geocoded.address_short}
+                  </h3>
+                  {poi.info?.info?.exist && (
+                    <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
+                      Existing
+                    </span>
+                  )}
+                </div>
                 <div className='space-y-1 text-sm'>
-                  <p>
-                    <span className='font-medium'>Area:</span>{' '}
-                    {poi.rupantor.geocoded.area}
-                  </p>
-                  <p>
-                    <span className='font-medium'>Road:</span>{' '}
-                    {poi.street_road_name_number}
-                  </p>
-                  <p>
-                    <span className='font-medium'>Type:</span>{' '}
-                    {poi.rupantor.geocoded.pType}
-                  </p>
+                  {poi.rupantor.geocoded.area && (
+                    <p>
+                      <span className='font-medium'>Area:</span>{' '}
+                      {poi.rupantor.geocoded.area}
+                      {poi.rupantor.geocoded.sub_area &&
+                        `, ${poi.rupantor.geocoded.sub_area}`}
+                    </p>
+                  )}
+                  {poi.rupantor.geocoded.road_name_number && (
+                    <p>
+                      <span className='font-medium'>Road:</span>{' '}
+                      {poi.rupantor.geocoded.road_name_number}
+                      {poi.rupantor.geocoded.holding_number &&
+                        ` (${poi.rupantor.geocoded.holding_number})`}
+                    </p>
+                  )}
+                  {poi.rupantor.geocoded.pType && (
+                    <p>
+                      <span className='font-medium'>Type:</span>{' '}
+                      {poi.rupantor.geocoded.pType}
+                    </p>
+                  )}
                   {poi.rupantor.geocoded.postCode && (
                     <p>
                       <span className='font-medium'>Post Code:</span>{' '}
@@ -314,8 +335,20 @@ const MapComponent = ({
                     </p>
                   )}
                   <p>
-                    <span className='font-medium'>Confidence:</span>{' '}
-                    {poi.rupantor.confidence_score_percentage}%
+                    <span className='font-medium'>Status:</span>{' '}
+                    <span
+                      className={`${
+                        poi.status === 'verified'
+                          ? 'text-green-600'
+                          : poi.status === 'edited'
+                          ? 'text-blue-600'
+                          : poi.status === 'rejected'
+                          ? 'text-red-600'
+                          : 'text-yellow-600'
+                      }`}
+                    >
+                      {poi.status || 'ai'}
+                    </span>
                   </p>
                 </div>
                 <div className='mt-2 pt-2 border-t border-gray-200'>

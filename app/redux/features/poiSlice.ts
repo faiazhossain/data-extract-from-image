@@ -26,9 +26,22 @@ interface POIState {
 
 interface APIResponsePOI {
   poi_name: string | null;
-  street_road_name_number: string;
-  address: string;
+  street_road_name_number: string | null;
+  address: string | null;
   rupantor: Rupantor;
+  info?: {
+    predict_doc: {
+      poi_name: string | null;
+      street_road_name_number: string | null;
+      address: string | null;
+      rupantor: Rupantor;
+    };
+    info: {
+      exist: boolean;
+      latitude: number;
+      longitude: number;
+    };
+  };
 }
 
 interface APIResponse {
@@ -53,9 +66,10 @@ const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
   return {
     id: uuidv4(), // Generate a unique ID for the POI
     poi_name: poiData.poi_name,
-    street_road_name_number: poiData.street_road_name_number,
-    address: poiData.address,
+    street_road_name_number: poiData.street_road_name_number || '',
+    address: poiData.address || '',
     rupantor: poiData.rupantor,
+    info: poiData.info,  // Include the info object
     status: 'ai', // Initial status
     location: {
       lat: parseFloat(poiData.rupantor.geocoded.latitude),
