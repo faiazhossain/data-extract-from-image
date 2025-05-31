@@ -85,13 +85,14 @@ const AppContent = () => {
 
   return (
     <div className='flex flex-col h-screen w-screen overflow-hidden'>
+      {' '}
       <ActionHeader
         onUploadImage={handleUploadImage}
         onRunDetection={handleRunDetection}
         onSaveToDb={handleSaveToDb}
         isProcessing={processingImage}
+        hasData={pois.length > 0}
       />
-
       <div className='flex flex-1 overflow-hidden'>
         {/* Left side - Map */}
         <div className='flex-1 h-full relative'>
@@ -103,7 +104,6 @@ const AppContent = () => {
           <POIList onUploadImage={handleUploadImage} onEdit={handleEdit} />
         </div>
       </div>
-
       {/* Edit Modal */}
       {editingPOI && (
         <EditPOIModal
@@ -112,7 +112,6 @@ const AppContent = () => {
           onSave={handleSaveEdit}
         />
       )}
-
       {/* Upload Modal */}
       {isUploadModalOpen && (
         <UploadModal

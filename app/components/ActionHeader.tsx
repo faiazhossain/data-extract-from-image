@@ -6,6 +6,7 @@ interface ActionHeaderProps {
   onRunDetection: () => void;
   onSaveToDb: () => void;
   isProcessing?: boolean;
+  hasData?: boolean;
 }
 
 const ActionHeader: React.FC<ActionHeaderProps> = ({
@@ -13,6 +14,7 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
   onRunDetection,
   onSaveToDb,
   isProcessing = false,
+  hasData = false,
 }) => {
   return (
     <header className='bg-white border-b border-gray-200 px-4 py-3'>
@@ -39,7 +41,6 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
             </svg>
             Upload Image
           </button>
-
           <button
             onClick={onRunDetection}
             className='px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center'
@@ -86,12 +87,11 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
                 Run Detection
               </>
             )}
-          </button>
-
+          </button>{' '}
           <button
             onClick={onSaveToDb}
-            className='px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium flex items-center'
-            disabled={isProcessing}
+            className='px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed'
+            disabled={isProcessing || !hasData}
           >
             <svg
               xmlns='http://www.w3.org/2000/svg'
@@ -101,7 +101,7 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
             >
               <path d='M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z' />
             </svg>
-            Save to DB
+            Export to Excel
           </button>
         </div>
       </div>

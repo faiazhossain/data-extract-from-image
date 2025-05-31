@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { POI, Rupantor } from '../../types';
 import { v4 as uuidv4 } from 'uuid';
+import { exportToExcel } from '../../services/exportService';
 
 interface POIState {
   pois: POI[];
@@ -148,25 +149,43 @@ export const poiSlice = createSlice({
     // Action to reset visible POIs (for new data processing)
     resetVisiblePOIs: (state) => {
       state.visiblePOIs = [];
+    }, // Action to save POIs to database (currently exports to Excel)
+    saveToDatabase: (state) => {
+      try {
+        // Export verified POIs to Excel
+        exportToExcel([...state.pois]);
+
+        // For the demo, we'll still mark everything as saved
+        state.pois.forEach((poi) => {
+          if (poi.status === 'ai') {
+            poi.status = 'verified';
+          }
+        });
+
+        // Also update visiblePOIs to reflect changes
+        state.visiblePOIs = state.visiblePOIs.map((poi) => {
+          if (poi.status === 'ai') {
+            return { ...poi, status: 'verified' };
+          }
+          return poi;
+        });
+      } catch (error) {
+        console.error('Failed to export POIs:', error);
+      }
     },
 
-    // Action to save POIs to database (mock for now)
-    saveToDatabase: (state) => {
-      // In a real implementation, this would call an API
-      // For now, just mark everything as saved by changing status
-      state.pois.forEach((poi) => {
-        if (poi.status === 'ai') {
-          poi.status = 'verified';
-        }
-      });
-
-      // Also update visiblePOIs to reflect changes
-      state.visiblePOIs = state.visiblePOIs.map((poi) => {
-        if (poi.status === 'ai') {
-          return { ...poi, status: 'verified' };
-        }
-        return poi;
-      });
+    // Action to export POIs to Excel
+    exportPOIsToExcel: (state) => {
+      // Call the export service (assuming it returns a promise)
+      exportToExcel(state.pois)
+        .then(() => {
+          // Handle successful export, e.g., show a notification
+          console.log('Exported successfully');
+        })
+        .catch((error) => {
+          // Handle export error
+          console.error('Export failed', error);
+        });
     },
 
     // Action to clear all data
@@ -229,6 +248,7 @@ export const {
   updatePOI,
   resetVisiblePOIs,
   saveToDatabase,
+  exportPOIsToExcel,
   clearAllData,
   setUploadedImage,
   toggleFullImage,
