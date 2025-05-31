@@ -60,14 +60,6 @@ const AppContent = () => {
     // Process the image (in real app, this would call your API)
     dispatch(processImageData(file));
   };
-
-  const handleRunDetection = () => {
-    // In a real app, this would trigger detection on an already-uploaded image
-    // For demo, we'll just simulate with a fake file
-    const fakeFile = new File([''], 'fake-image.jpg', { type: 'image/jpeg' });
-    handleProcessImage(fakeFile);
-  };
-
   const handleSaveToDb = () => {
     // In a real app, this would save verified POIs to a database
     dispatch(saveToDatabase());
@@ -87,10 +79,8 @@ const AppContent = () => {
 
   return (
     <div className='flex flex-col h-screen w-screen overflow-hidden'>
-      {' '}
-      <ActionHeader
+      {' '}      <ActionHeader
         onUploadImage={handleUploadImage}
-        onRunDetection={handleRunDetection}
         onSaveToDb={handleSaveToDb}
         isProcessing={processingImage}
         hasData={hasAnyPOIs}
