@@ -17,7 +17,7 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
   return (
     <header className='bg-white border-b border-gray-200 px-4 py-3'>
       <div className='flex items-center justify-between'>
-        <h1 className='text-xl font-bold'>POI Detection</h1>
+        <h1 className='text-xl font-bold'>Image POI Extractor</h1>
 
         <div className='flex space-x-3'>
           <button

@@ -7,9 +7,11 @@ import Map, {
   MarkerDragEvent,
   Popup,
 } from 'react-map-gl/maplibre';
+import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
+import { RootState } from '../redux/store';
 
 // Import icons
 import {
@@ -99,7 +101,7 @@ const MapComponent = ({
   // Get POIs from Redux store
   const dispatch = useAppDispatch();
   const { visiblePOIs, selectedPOI, hoveredPOI } = useAppSelector(
-    (state) => state.poi
+    (state: RootState) => state.poi
   );
   const [popupInfo, setPopupInfo] = useState<POI | null>(null);
 
@@ -152,6 +154,32 @@ const MapComponent = ({
       }
     }
   }, [visiblePOIs, animatedPOIs]);
+
+  // Fit bounds to markers when they change
+  useEffect(() => {
+    if (mapRef.current && visiblePOIs.length > 0) {
+      const bounds = new maplibregl.LngLatBounds();
+
+      visiblePOIs.forEach((poi: POI) => {
+        if (
+          poi.rupantor?.geocoded?.latitude &&
+          poi.rupantor?.geocoded?.longitude
+        ) {
+          bounds.extend([
+            parseFloat(poi.rupantor.geocoded.longitude),
+            parseFloat(poi.rupantor.geocoded.latitude),
+          ]);
+        }
+      });
+
+      if (!bounds.isEmpty()) {
+        mapRef.current.fitBounds(bounds, {
+          padding: 50,
+          duration: 1000,
+        });
+      }
+    }
+  }, [visiblePOIs]);
 
   // Create a complete solution with custom icon rendering for each POI type
   const renderPOIs = () => {

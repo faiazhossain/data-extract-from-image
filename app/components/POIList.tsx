@@ -61,7 +61,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
             ) : (
               <>
                 <Image
-                  src='/placeholder-map.svg'
+                  src='/images/map-placeholder.png'
                   alt='Upload Map Image'
                   width={128}
                   height={128}
