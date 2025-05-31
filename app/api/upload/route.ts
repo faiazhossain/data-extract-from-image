@@ -4,6 +4,8 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    const focusLat = formData.get('focus_lat');
+    const focusLon = formData.get('focus_lon');
 
     if (!file) {
       return new Response('No file received.', { status: 400 });
@@ -13,8 +15,14 @@ export async function POST(req: NextRequest) {
     const barikoiFormData = new FormData();
     barikoiFormData.append('file', file);
 
+    // Construct the URL with focus coordinates if they exist
+    let apiUrl = 'https://usage.bmapsbd.com/view';
+    if (focusLat && focusLon) {
+      apiUrl += `?focus_lat=${focusLat}&focus_lon=${focusLon}`;
+    }
+
     // Forward the request to the Barikoi API
-    const response = await fetch('https://usage.bmapsbd.com/view', {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       body: barikoiFormData,
     });

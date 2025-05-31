@@ -81,9 +81,16 @@ const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
 // Process image through our API endpoint
 export const processImageData = createAsyncThunk(
   'pois/processImage',
-  async (imageFile: File) => {
+  async (payload: {
+    file: File;
+    coordinates?: { latitude: number; longitude: number };
+  }) => {
     const formData = new FormData();
-    formData.append('file', imageFile);
+    formData.append('file', payload.file);
+    if (payload.coordinates) {
+      formData.append('focus_lat', payload.coordinates.latitude.toString());
+      formData.append('focus_lon', payload.coordinates.longitude.toString());
+    }
     try {
       const response = await fetch('/api/upload', {
         method: 'POST',

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './redux/hooks';
+import { store } from './redux/store';
 import {
   processImageData,
   addVisiblePOI,
@@ -53,12 +54,18 @@ const AppContent = () => {
   const handleCloseUploadModal = () => {
     setIsUploadModalOpen(false);
   };
-
   const handleProcessImage = (file: File) => {
     // Reset visible POIs before processing new image
     dispatch(resetVisiblePOIs());
-    // Process the image (in real app, this would call your API)
-    dispatch(processImageData(file));
+    // Get coordinates from uploaded image state
+    const { uploadedImage } = store.getState().poi;
+    // Process the image with coordinates if available
+    dispatch(
+      processImageData({
+        file,
+        coordinates: uploadedImage?.coordinates,
+      })
+    );
   };
   const handleSaveToDb = () => {
     // In a real app, this would save verified POIs to a database

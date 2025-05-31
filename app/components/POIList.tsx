@@ -52,6 +52,14 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
     dispatch(selectPOI(id === selectedPOI ? null : id));
   };
 
+  const getImageUrlWithCoordinates = (baseUrl: string) => {
+    if (uploadedImage?.coordinates) {
+      const separator = baseUrl.includes('?') ? '&' : '?';
+      return `${baseUrl}${separator}focus_lat=${uploadedImage.coordinates.latitude}&focus_lon=${uploadedImage.coordinates.longitude}`;
+    }
+    return baseUrl;
+  };
+
   return (
     <div className='flex flex-col h-full overflow-hidden bg-gray-50'>
       <h2 className='text-xl font-bold px-6 py-4 bg-white border-b border-gray-200 font-geist-sans tracking-tight'>
@@ -64,7 +72,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
             onClick={() => dispatch(toggleFullImage())}
           >
             <Image
-              src={uploadedImage.url}
+              src={getImageUrlWithCoordinates(uploadedImage.url)}
               alt='Uploaded Image'
               fill
               style={{ objectFit: 'cover' }}
@@ -95,7 +103,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
         >
           <div className='relative w-full max-w-4xl h-[80vh]'>
             <Image
-              src={uploadedImage.url}
+              src={getImageUrlWithCoordinates(uploadedImage.url)}
               alt='Full Image'
               fill
               style={{ objectFit: 'contain' }}
