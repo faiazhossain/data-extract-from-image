@@ -13,3 +13,23 @@
 .relative {
   position: relative;
 }
+
+@keyframes fire {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+}
+
+/* Add animate-fire utility class */
+.animate-fire {
+  animation: fire 1.5s ease-in-out infinite;
+}

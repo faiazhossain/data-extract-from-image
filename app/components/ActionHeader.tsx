@@ -31,11 +31,29 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
   return (
     <header className='bg-white border-b border-gray-200 px-6 py-4 shadow-sm'>
       <div className='flex items-center justify-between max-w-[1920px] mx-auto'>
-        <div className='flex items-center space-x-2'>
-          {' '}
+        <div className='flex flex-col'>
           <h1 className='text-2xl font-bold font-geist-sans tracking-tight bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent'>
             Image POI Extractor
           </h1>
+          <div className='flex items-center mt-1 space-x-1'>
+            <div className='relative w-4 h-4'>
+              <div className='absolute inset-0 animate-fire'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  className='w-4 h-4 text-orange-500'
+                >
+                  <path
+                    fill='currentColor'
+                    d='M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11zm0-2a9 9 0 1 1 0-18 9 9 0 0 1 0 18zm0-7l3 3H9l3-3zm0-2L9 9h6l-3 3z'
+                  />
+                </svg>
+              </div>
+            </div>
+            <span className='text-xs font-medium text-gray-600 bg-gradient-to-r from-orange-500 to-purple-600 bg-clip-text text-transparent'>
+              AI Powered
+            </span>
+          </div>
         </div>
 
         <div className='flex items-center space-x-4'>
