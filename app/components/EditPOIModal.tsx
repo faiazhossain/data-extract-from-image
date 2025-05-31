@@ -34,7 +34,6 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
     longitude: '',
     postCode: 0,
   });
-
   useEffect(() => {
     if (poi) {
       setFormData({
@@ -42,7 +41,8 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
         area: poi.rupantor.geocoded.area || '',
         sub_area: poi.rupantor.geocoded.sub_area || '',
         pType: poi.rupantor.geocoded.pType || '',
-        address_short: poi.rupantor.geocoded.address_short || '',
+        address_short:
+          poi.poi_name || poi.rupantor.geocoded.address_short || '',
         latitude: poi.rupantor.geocoded.latitude || '',
         longitude: poi.rupantor.geocoded.longitude || '',
         postCode: poi.rupantor.geocoded.postCode || 0,

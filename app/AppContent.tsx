@@ -79,7 +79,8 @@ const AppContent = () => {
 
   return (
     <div className='flex flex-col h-screen w-screen overflow-hidden'>
-      {' '}      <ActionHeader
+      {' '}
+      <ActionHeader
         onUploadImage={handleUploadImage}
         onSaveToDb={handleSaveToDb}
         isProcessing={processingImage}
