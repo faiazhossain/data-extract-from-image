@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     barikoiFormData.append("file", compressedFile);
 
     // Construct the URL with focus coordinates if they exist
-    let apiUrl = "https://usage.bmapsbd.com/view";
+    let apiUrl = "https://usage.bmapsbd.com/extract";
     if (focusLat && focusLon) {
       apiUrl += `?focus_lat=${focusLat}&focus_lon=${focusLon}`;
     }
