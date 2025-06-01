@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { BiUpload } from "react-icons/bi";
+import { BiUpload, BiDownload } from "react-icons/bi";
 import { MdOutlineDragIndicator } from "react-icons/md";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { toggleDragMode } from "../redux/features/markerSlice";
@@ -15,6 +15,40 @@ const SimpleHeader: React.FC<SimpleHeaderProps> = ({ onUploadClick }) => {
     (state) => state.marker
   );
   const hasMarkers = markers.length > 0;
+
+  // Function to handle downloading CSV of the current marker positions
+  const handleDownloadCSV = () => {
+    if (markers.length === 0) return;
+
+    // Convert markers to CSV format
+    const csvHeader =
+      "latitude,longitude,event_details,event_contact_no,service_type";
+    const csvRows = markers.map(
+      (marker) =>
+        `${marker.latitude},${marker.longitude},${marker.name || ""},${
+          marker.contactNo || ""
+        },${marker.serviceType || ""}`
+    );
+
+    // Combine header and rows
+    const csvContent = [csvHeader, ...csvRows].join("\n");
+
+    // Create a Blob with the CSV content
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    // Create a download link and trigger the download
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `updated_markers_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <header className='bg-white border-b border-gray-200 px-6 py-4 shadow-sm'>
@@ -46,6 +80,17 @@ const SimpleHeader: React.FC<SimpleHeaderProps> = ({ onUploadClick }) => {
               </span>
             )}
           </button>
+
+          {hasMarkers && (
+            <button
+              onClick={handleDownloadCSV}
+              className='px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium flex items-center transition-all duration-200 hover:shadow-md'
+              title='Download updated CSV'
+            >
+              <BiDownload className='w-5 h-5 mr-2' />
+              Download CSV
+            </button>
+          )}
 
           <button
             onClick={onUploadClick}

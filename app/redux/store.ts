@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import markerReducer from "./features/markerSlice";
+import poiReducer from "./features/poiSlice";
 
 export const store = configureStore({
   reducer: {
     marker: markerReducer,
+    poi: poiReducer,
   },
 });
 

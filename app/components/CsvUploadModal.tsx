@@ -172,7 +172,7 @@ const CsvUploadModal: React.FC<CsvUploadModalProps> = ({ isOpen, onClose }) => {
         // Set a small timeout to let the UI update before processing more markers
         if (data.length > 50) {
           setTimeout(() => {
-            const remainingBatches = [];
+            const remainingBatches: CSVMarkerData[][] = [];
             for (let i = 50; i < data.length; i += 50) {
               remainingBatches.push(data.slice(i, i + 50));
             }

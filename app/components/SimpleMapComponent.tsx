@@ -131,7 +131,7 @@ const SimpleMapComponent: React.FC<SimpleMapComponentProps> = ({
         });
       }
     }
-  }, [markers.length, isLoading]);
+  }, [markers.length, isLoading, markers]);
 
   // Handle marker drag end
   const handleDragEnd = (event: MarkerDragEvent, markerId: string) => {

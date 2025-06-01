@@ -7,9 +7,7 @@ import {
 } from "../redux/features/markerSlice";
 import { FaMapMarkerAlt } from "react-icons/fa";
 
-interface MarkerListProps {}
-
-const MarkerList: React.FC<MarkerListProps> = () => {
+const MarkerList: React.FC = () => {
   const dispatch = useAppDispatch();
   const { markers, selectedMarkerId, hoveredMarkerId, isDragModeEnabled } =
     useAppSelector((state) => state.marker);
