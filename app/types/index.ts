@@ -55,7 +55,7 @@ export interface POI {
     lat: number;
     lng: number;
   };
-  status?: 'ai' | 'verified' | 'edited' | 'rejected';
+  status?: "ai" | "verified" | "edited" | "rejected";
   info?: {
     predict_doc: {
       poi_name: string | null;
@@ -69,4 +69,22 @@ export interface POI {
       longitude: number;
     };
   };
+}
+
+export interface MarkerData {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  contactNo?: string;
+  details?: string;
+  serviceType?: string;
+}
+
+export interface CSVMarkerData {
+  event_contact_no: string;
+  event_details: string;
+  latitude: string;
+  longitude: string;
+  service_type: string;
 }
