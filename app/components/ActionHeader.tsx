@@ -1,31 +1,25 @@
-'use client';
-import React from 'react';
-import { BiImageAdd } from 'react-icons/bi';
-import { FiDownload } from 'react-icons/fi';
-import { MdOutlineDragIndicator } from 'react-icons/md';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
-import { toggleDragMode } from '../redux/features/poiSlice';
+"use client";
+import React from "react";
+import { BiImageAdd } from "react-icons/bi";
+import { MdOutlineDragIndicator } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import { toggleDragMode } from "../redux/features/poiSlice";
 
 interface ActionHeaderProps {
   onUploadImage: () => void;
-  onSaveToDb: () => void;
   isProcessing?: boolean;
   hasData?: boolean;
 }
 
 const ActionHeader: React.FC<ActionHeaderProps> = ({
   onUploadImage,
-  onSaveToDb,
   isProcessing = false,
   hasData = false,
 }) => {
   const dispatch = useDispatch();
   const isDragModeEnabled = useSelector(
     (state: RootState) => state.poi.isDragModeEnabled
-  );
-  const hasVerifiedPOIs = useSelector((state: RootState) =>
-    state.poi.visiblePOIs.some((poi) => poi.status === 'verified')
   );
 
   return (
@@ -57,39 +51,39 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
         </div>
 
         <div className='flex items-center space-x-4'>
-          {' '}
+          {" "}
           <button
             onClick={() => dispatch(toggleDragMode())}
             className={`px-4 py-2 ${
               isDragModeEnabled
-                ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
             } border rounded-lg text-sm font-medium flex items-center transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none disabled:hover:shadow-none disabled:hover:translate-y-0`}
             disabled={isProcessing || !hasData}
             title={
               !hasData
-                ? 'Upload an image to enable drag mode'
+                ? "Upload an image to enable drag mode"
                 : isDragModeEnabled
-                ? 'Click to disable drag mode'
-                : 'Click to enable drag mode'
+                ? "Click to disable drag mode"
+                : "Click to enable drag mode"
             }
           >
             <MdOutlineDragIndicator
               className={`w-5 h-5 mr-2 transition-colors duration-200 ${
-                isDragModeEnabled ? 'text-white' : 'text-gray-600'
+                isDragModeEnabled ? "text-white" : "text-gray-600"
               }`}
             />
             <span className='relative'>
-              {isDragModeEnabled ? 'Disable' : 'Enable'} Drag
+              {isDragModeEnabled ? "Disable" : "Enable"} Drag
               {isDragModeEnabled && (
                 <span className='absolute -top-1 -right-1.5 flex h-2 w-2'>
-                  {' '}
+                  {" "}
                   <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-200 opacity-75'></span>
                   <span className='relative inline-flex rounded-full h-2 w-2 bg-white'></span>
                 </span>
               )}
             </span>
-          </button>{' '}
+          </button>{" "}
           <button
             onClick={onUploadImage}
             className='px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-lg text-sm font-medium flex items-center transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5'
@@ -97,24 +91,6 @@ const ActionHeader: React.FC<ActionHeaderProps> = ({
           >
             <BiImageAdd className='w-5 h-5 mr-2 text-white' />
             Upload Image
-          </button>
-          <button
-            onClick={onSaveToDb}
-            className='px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg text-sm font-medium flex items-center transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none'
-            disabled={isProcessing || !hasVerifiedPOIs}
-            title={
-              !hasVerifiedPOIs
-                ? 'Verify POIs before exporting'
-                : 'Export verified POIs to Excel'
-            }
-          >
-            <FiDownload className='w-5 h-5 mr-2' />
-            Export to Excel
-            {hasData && !hasVerifiedPOIs && (
-              <span className='ml-2 bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full'>
-                Verify First
-              </span>
-            )}
           </button>
         </div>
       </div>

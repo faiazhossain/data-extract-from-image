@@ -1,7 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { POI, Rupantor } from '../../types';
-import { v4 as uuidv4 } from 'uuid';
-import { exportToExcel } from '../../services/exportService';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { POI, Rupantor } from "../../types";
+import { v4 as uuidv4 } from "uuid";
 
 interface POIState {
   pois: POI[];
@@ -66,11 +65,11 @@ const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
   return {
     id: uuidv4(), // Generate a unique ID for the POI
     poi_name: poiData.poi_name,
-    street_road_name_number: poiData.street_road_name_number || '',
-    address: poiData.address || '',
+    street_road_name_number: poiData.street_road_name_number || "",
+    address: poiData.address || "",
     rupantor: poiData.rupantor,
     info: poiData.info, // Include the info object
-    status: 'ai', // Initial status
+    status: "ai", // Initial status
     location: {
       lat: parseFloat(poiData.rupantor.geocoded.latitude),
       lng: parseFloat(poiData.rupantor.geocoded.longitude),
@@ -80,25 +79,25 @@ const formatPOIFromResponse = (poiData: APIResponsePOI): POI => {
 
 // Process image through our API endpoint
 export const processImageData = createAsyncThunk(
-  'pois/processImage',
+  "pois/processImage",
   async (payload: {
     file: File;
     coordinates?: { latitude: number; longitude: number };
   }) => {
     const formData = new FormData();
-    formData.append('file', payload.file);
+    formData.append("file", payload.file);
     if (payload.coordinates) {
-      formData.append('focus_lat', payload.coordinates.latitude.toString());
-      formData.append('focus_lon', payload.coordinates.longitude.toString());
+      formData.append("focus_lat", payload.coordinates.latitude.toString());
+      formData.append("focus_lon", payload.coordinates.longitude.toString());
     }
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
+      const response = await fetch("/api/upload", {
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to process image');
+        throw new Error("Failed to process image");
       }
 
       const data = (await response.json()) as APIResponse;
@@ -106,13 +105,13 @@ export const processImageData = createAsyncThunk(
       // Transform the response data into POI objects
       return data.result.map(formatPOIFromResponse);
     } catch (error) {
-      throw new Error('Failed to process image: ' + (error as Error).message);
+      throw new Error("Failed to process image: " + (error as Error).message);
     }
   }
 );
 
 export const poiSlice = createSlice({
-  name: 'pois',
+  name: "pois",
   initialState,
   reducers: {
     // Action to add POIs gradually for animation
@@ -135,7 +134,7 @@ export const poiSlice = createSlice({
       state,
       action: PayloadAction<{
         id: string;
-        status: POI['status'];
+        status: POI["status"];
       }>
     ) => {
       const { id, status } = action.payload;
@@ -162,7 +161,7 @@ export const poiSlice = createSlice({
       if (poiIndex !== -1) {
         state.pois[poiIndex] = {
           ...updatedPOI,
-          status: 'edited',
+          status: "edited",
         };
 
         // Also update in visiblePOIs
@@ -172,7 +171,7 @@ export const poiSlice = createSlice({
         if (visibleIndex !== -1) {
           state.visiblePOIs[visibleIndex] = {
             ...updatedPOI,
-            status: 'edited',
+            status: "edited",
           };
         }
       }
@@ -181,45 +180,6 @@ export const poiSlice = createSlice({
     // Action to reset visible POIs (for new data processing)
     resetVisiblePOIs: (state) => {
       state.visiblePOIs = [];
-    }, // Action to save POIs to database (currently exports to Excel)
-    saveToDatabase: (state) => {
-      try {
-        // Export verified POIs to Excel
-        exportToExcel([...state.pois]);
-
-        // For the demo, we'll still mark everything as saved
-        state.pois.forEach((poi) => {
-          if (poi.status === 'ai') {
-            poi.status = 'verified';
-          }
-        });
-
-        // Also update visiblePOIs to reflect changes
-        state.visiblePOIs = state.visiblePOIs.map((poi) => {
-          if (poi.status === 'ai') {
-            return { ...poi, status: 'verified' as POI['status'] };
-          }
-          return poi;
-        });
-      } catch (error: unknown) {
-        console.error(
-          'Failed to export POIs:',
-          error instanceof Error ? error.message : 'Unknown error'
-        );
-      }
-    },
-
-    // Action to export POIs to Excel
-    exportPOIsToExcel: (state) => {
-      try {
-        exportToExcel([...state.pois]);
-        console.log('Exported successfully');
-      } catch (error: unknown) {
-        console.error(
-          'Export failed:',
-          error instanceof Error ? error.message : 'Unknown error'
-        );
-      }
     },
 
     // Action to clear all data
@@ -248,7 +208,9 @@ export const poiSlice = createSlice({
 
     clearUploadedImage: (state) => {
       state.uploadedImage = null;
-    }, // Action to enable or disable drag mode
+    },
+
+    // Action to enable or disable drag mode
     toggleDragMode: (state) => {
       state.isDragModeEnabled = !state.isDragModeEnabled;
     },
@@ -291,7 +253,7 @@ export const poiSlice = createSlice({
       .addCase(processImageData.rejected, (state, action) => {
         state.loading = false;
         state.processingImage = false;
-        state.error = action.error.message || 'Failed to process image';
+        state.error = action.error.message || "Failed to process image";
       });
   },
 });
@@ -303,8 +265,6 @@ export const {
   updatePOIStatus,
   updatePOI,
   resetVisiblePOIs,
-  saveToDatabase,
-  exportPOIsToExcel,
   clearAllData,
   setUploadedImage,
   toggleFullImage,

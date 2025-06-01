@@ -1,21 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from './redux/hooks';
-import { store } from './redux/store';
+import { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "./redux/hooks";
+import { store } from "./redux/store";
 import {
   processImageData,
   addVisiblePOI,
   updatePOI,
-  saveToDatabase,
   resetVisiblePOIs,
-} from './redux/features/poiSlice';
-import MapComponent from './components/MapComponent';
-import POIList from './components/POIList';
-import ActionHeader from './components/ActionHeader';
-import EditPOIModal from './components/EditPOIModal';
-import UploadModal from './components/UploadModal';
-import { POI } from './types';
+} from "./redux/features/poiSlice";
+import MapComponent from "./components/MapComponent";
+import POIList from "./components/POIList";
+import ActionHeader from "./components/ActionHeader";
+import EditPOIModal from "./components/EditPOIModal";
+import UploadModal from "./components/UploadModal";
+import { POI } from "./types";
 
 const AppContent = () => {
   const dispatch = useAppDispatch();
@@ -67,10 +66,6 @@ const AppContent = () => {
       })
     );
   };
-  const handleSaveToDb = () => {
-    // In a real app, this would save verified POIs to a database
-    dispatch(saveToDatabase());
-  };
 
   const handleEdit = (id: string) => {
     const poi = pois.find((p) => p.id === id);
@@ -86,10 +81,9 @@ const AppContent = () => {
 
   return (
     <div className='flex flex-col h-screen w-screen overflow-hidden'>
-      {' '}
+      {" "}
       <ActionHeader
         onUploadImage={handleUploadImage}
-        onSaveToDb={handleSaveToDb}
         isProcessing={processingImage}
         hasData={hasAnyPOIs}
       />
