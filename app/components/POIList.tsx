@@ -1,15 +1,15 @@
-'use client';
-import React from 'react';
-import Image from 'next/image';
-import { POI } from '../types';
-import { useAppSelector, useAppDispatch } from '../redux/hooks';
+"use client";
+import React from "react";
+import Image from "next/image";
+import { POI } from "../types";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import {
   updatePOIStatus,
   selectPOI,
   setHoveredPOI,
   toggleFullImage,
   togglePoiEditPermission,
-} from '../redux/features/poiSlice';
+} from "../redux/features/poiSlice";
 
 interface POIListProps {
   onUploadImage: () => void;
@@ -27,25 +27,25 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
     showFullImage,
     isDragModeEnabled,
   } = useAppSelector((state) => state.poi);
-  const getStatusColor = (status: POI['status']) => {
+  const getStatusColor = (status: POI["status"]) => {
     switch (status) {
-      case 'ai':
-        return 'bg-yellow-400'; // Yellow
-      case 'verified':
-        return 'bg-green-500'; // Green
-      case 'rejected':
-        return 'bg-red-500'; // Red
+      case "ai":
+        return "bg-yellow-400"; // Yellow
+      case "verified":
+        return "bg-green-500"; // Green
+      case "rejected":
+        return "bg-red-500"; // Red
       default:
-        return 'bg-yellow-400'; // Default yellow
+        return "bg-yellow-400"; // Default yellow
     }
   };
 
   const handleAccept = (id: string) => {
-    dispatch(updatePOIStatus({ id, status: 'verified' }));
+    dispatch(updatePOIStatus({ id, status: "verified" }));
   };
 
   const handleReject = (id: string) => {
-    dispatch(updatePOIStatus({ id, status: 'rejected' }));
+    dispatch(updatePOIStatus({ id, status: "rejected" }));
   };
 
   const handleSelectPOI = (id: string) => {
@@ -53,18 +53,25 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
   };
 
   const getImageUrlWithCoordinates = (baseUrl: string) => {
-    if (uploadedImage?.coordinates) {
-      const separator = baseUrl.includes('?') ? '&' : '?';
-      return `${baseUrl}${separator}focus_lat=${uploadedImage.coordinates.latitude}&focus_lon=${uploadedImage.coordinates.longitude}`;
+    if (!baseUrl) return ""; // Return empty string if no URL to prevent errors
+
+    try {
+      if (uploadedImage?.coordinates) {
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        return `${baseUrl}${separator}focus_lat=${uploadedImage.coordinates.latitude}&focus_lon=${uploadedImage.coordinates.longitude}`;
+      }
+      return baseUrl;
+    } catch (error) {
+      console.error("Error constructing image URL:", error);
+      return baseUrl; // Return original URL if there's an error
     }
-    return baseUrl;
   };
 
   return (
     <div className='flex flex-col h-full overflow-hidden bg-gray-50'>
       <h2 className='text-xl font-bold px-6 py-4 bg-white border-b border-gray-200 font-geist-sans tracking-tight'>
         Points of Interest
-      </h2>{' '}
+      </h2>{" "}
       {uploadedImage && (
         <div className='p-4 border-b'>
           <div
@@ -75,8 +82,13 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
               src={getImageUrlWithCoordinates(uploadedImage.url)}
               alt='Uploaded Image'
               fill
-              style={{ objectFit: 'cover' }}
+              style={{ objectFit: "cover" }}
               className='hover:scale-105 transition-transform duration-200'
+              onError={(e) => {
+                console.error("Image load error, trying without coordinates");
+                // Fallback to original URL if loading with coordinates fails
+                (e.target as HTMLImageElement).src = uploadedImage.url;
+              }}
             />
           </div>
           {uploadedImage.coordinates && (
@@ -84,11 +96,11 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
               <p className='font-medium mb-1'>Extracted Coordinates:</p>
               <div className='grid grid-cols-2 gap-4'>
                 <div>
-                  <span className='font-medium'>Latitude:</span>{' '}
+                  <span className='font-medium'>Latitude:</span>{" "}
                   {uploadedImage.coordinates.latitude.toFixed(6)}
                 </div>
                 <div>
-                  <span className='font-medium'>Longitude:</span>{' '}
+                  <span className='font-medium'>Longitude:</span>{" "}
                   {uploadedImage.coordinates.longitude.toFixed(6)}
                 </div>
               </div>
@@ -106,8 +118,15 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
               src={getImageUrlWithCoordinates(uploadedImage.url)}
               alt='Full Image'
               fill
-              style={{ objectFit: 'contain' }}
+              style={{ objectFit: "contain" }}
               className='rounded-lg'
+              onError={(e) => {
+                console.error(
+                  "Fullscreen image load error, trying without coordinates"
+                );
+                // Fallback to original URL if loading with coordinates fails
+                (e.target as HTMLImageElement).src = uploadedImage.url;
+              }}
             />
           </div>
         </div>
@@ -133,7 +152,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                   No points of interest detected yet.
                   <br />
                   Upload an image to begin.
-                </p>{' '}
+                </p>{" "}
                 <button
                   onClick={onUploadImage}
                   className='mt-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md flex items-center shadow-md transition-colors duration-150'
@@ -164,17 +183,17 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                   `${poi.rupantor.geocoded.latitude}-${poi.rupantor.geocoded.longitude}`
                 }
                 className={`p-6 hover:bg-gray-50 transition-all duration-150 ${
-                  selectedPOI === poi.id ? 'bg-blue-50/70' : ''
+                  selectedPOI === poi.id ? "bg-blue-50/70" : ""
                 } ${
                   hoveredPOI === poi.id
-                    ? 'bg-blue-50 shadow-md scale-[1.01] transform'
-                    : ''
+                    ? "bg-blue-50 shadow-md scale-[1.01] transform"
+                    : ""
                 }`}
                 onClick={() => poi.id && handleSelectPOI(poi.id)}
                 onMouseEnter={() => poi.id && dispatch(setHoveredPOI(poi.id))}
                 onMouseLeave={() => dispatch(setHoveredPOI(null))}
               >
-                {' '}
+                {" "}
                 <div className='flex flex-col h-full'>
                   {/* Header Section */}
                   <div className='flex items-start'>
@@ -185,7 +204,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                     ></div>
                     <div className='flex-1'>
                       <div className='flex items-center justify-between'>
-                        {' '}
+                        {" "}
                         <div className='flex items-center gap-2'>
                           <h3 className='font-medium font-geist-sans text-gray-900 leading-tight flex items-center gap-2'>
                             {poi.poi_name ||
@@ -212,7 +231,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                           <div className='flex space-x-2 ml-auto'>
                             {((poi.isEditEnabled && poi.info?.info?.exist) ||
                               !poi.info?.info?.exist) &&
-                              poi.status !== 'verified' &&
+                              poi.status !== "verified" &&
                               poi.id && (
                                 <button
                                   onClick={(e) => {
@@ -238,7 +257,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                               )}
                             {((poi.isEditEnabled && poi.info?.info?.exist) ||
                               !poi.info?.info?.exist) &&
-                              poi.status !== 'rejected' &&
+                              poi.status !== "rejected" &&
                               poi.id && (
                                 <button
                                   onClick={(e) => {
@@ -294,7 +313,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                               viewBox='0 0 20 20'
                               fill='currentColor'
                             >
-                              {' '}
+                              {" "}
                               <path d='M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z' />
                             </svg>
                             Cannot move
@@ -328,7 +347,7 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                         )}
                       </div>
                     </div>
-                  </div>{' '}
+                  </div>{" "}
                   {/* Lock/Unlock Button Section */}
                   <div className='flex justify-end mt-4'>
                     {poi.info?.info?.exist && poi.id && (
@@ -339,8 +358,8 @@ const POIList: React.FC<POIListProps> = ({ onUploadImage, onEdit }) => {
                         }}
                         className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                           poi.isEditEnabled
-                            ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
                         <div className='flex items-center gap-1'>

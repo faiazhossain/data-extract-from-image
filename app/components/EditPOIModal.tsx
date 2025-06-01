@@ -1,6 +1,6 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { POI } from '../types';
+"use client";
+import React, { useState, useEffect } from "react";
+import { POI } from "../types";
 
 interface EditPOIModalProps {
   poi: POI | null;
@@ -28,33 +28,33 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState<EditFormData>({
-    street_road_name_number: '',
-    area: '',
-    sub_area: '',
-    pType: '',
-    address: '',
-    address_short: '',
-    latitude: '',
-    longitude: '',
+    street_road_name_number: "",
+    area: "",
+    sub_area: "",
+    pType: "",
+    address: "",
+    address_short: "",
+    latitude: "",
+    longitude: "",
     postCode: 0,
-    city: '',
-    road_name_number: '',
+    city: "",
+    road_name_number: "",
   });
 
   useEffect(() => {
     if (poi) {
       setFormData({
-        street_road_name_number: poi.street_road_name_number || '',
-        area: poi.rupantor.geocoded.area || '',
-        sub_area: poi.rupantor.geocoded.sub_area || '',
-        pType: poi.rupantor.geocoded.pType || '',
-        address: poi.rupantor.geocoded.address || '',
-        address_short: poi.poi_name || '',
-        latitude: poi.rupantor.geocoded.latitude || '',
-        longitude: poi.rupantor.geocoded.longitude || '',
+        street_road_name_number: poi.street_road_name_number || "",
+        area: poi.rupantor.geocoded.area || "",
+        sub_area: poi.rupantor.geocoded.sub_area || "",
+        pType: poi.rupantor.geocoded.pType || "",
+        address: poi.rupantor.geocoded.address || "",
+        address_short: poi.poi_name || "",
+        latitude: poi.rupantor.geocoded.latitude || "",
+        longitude: poi.rupantor.geocoded.longitude || "",
         postCode: poi.rupantor.geocoded.postCode || 0,
-        city: poi.rupantor.geocoded.city || '',
-        road_name_number: poi.rupantor.geocoded.road_name_number || '',
+        city: poi.rupantor.geocoded.city || "",
+        road_name_number: poi.rupantor.geocoded.road_name_number || "",
       });
     }
   }, [poi]);
@@ -65,7 +65,7 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'postCode' ? parseInt(value) || 0 : value,
+      [name]: name === "postCode" ? parseInt(value) || 0 : value,
     }));
   };
 
@@ -89,7 +89,7 @@ const EditPOIModal: React.FC<EditPOIModalProps> = ({
             Address: `${formData.address_short}, ${formData.area}, ${formData.sub_area}`,
           },
         },
-        status: 'verified', // Set status to verified when manually edited
+        status: "verified", // Set status to verified when manually edited
       };
       onSave(updatedPOI);
     }

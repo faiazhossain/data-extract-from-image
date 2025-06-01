@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState, useRef } from 'react';
-import Image from 'next/image';
-import exifr from 'exifr';
-import { useAppDispatch } from '../redux/hooks';
-import { setUploadedImage } from '../redux/features/poiSlice';
+import React, { useState, useRef } from "react";
+import Image from "next/image";
+import exifr from "exifr";
+import { useAppDispatch } from "../redux/hooks";
+import { setUploadedImage } from "../redux/features/poiSlice";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -57,33 +57,37 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const handleFileSelection = async (file: File) => {
     setError(null);
     // Check if the file is an image
-    if (file.type.startsWith('image/')) {
-      try {
-        // Create URL for the uploaded image
-        const imageUrl = URL.createObjectURL(file);
+    if (file.type.startsWith("image/")) {
+      // Create URL for the uploaded image
+      const imageUrl = URL.createObjectURL(file);
+      let coordinates = undefined;
 
+      try {
         // Read EXIF data including GPS
         const output = await exifr.parse(file, { gps: true });
-        const coordinates =
+        coordinates =
           output?.latitude && output?.longitude
             ? { latitude: output.latitude, longitude: output.longitude }
             : undefined;
-
-        // Save image and coordinates to Redux store
-        dispatch(
-          setUploadedImage({
-            url: imageUrl,
-            file,
-            coordinates,
-          })
-        );
-        setSelectedFile(file);
       } catch (error) {
-        console.error('Error reading image metadata:', error);
-        setError('Error processing image metadata');
+        console.error("Error reading image metadata:", error);
+        setError(
+          "Error processing image metadata, but image will still be uploaded"
+        );
+        // Continue with the upload process even if metadata extraction fails
       }
+
+      // Save image and coordinates to Redux store
+      dispatch(
+        setUploadedImage({
+          url: imageUrl,
+          file,
+          coordinates,
+        })
+      );
+      setSelectedFile(file);
     } else {
-      setError('Please select an image file');
+      setError("Please select an image file");
     }
   };
   const handleUpload = async () => {
@@ -95,9 +99,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
         onClose();
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : 'Failed to upload image'
+          error instanceof Error ? error.message : "Failed to upload image"
         );
-        console.error('Upload error:', error);
+        console.error("Upload error:", error);
       }
     }
   };
@@ -136,10 +140,10 @@ const UploadModal: React.FC<UploadModalProps> = ({
           <div
             className={`border-2 border-dashed ${
               isDragging
-                ? 'border-blue-500'
+                ? "border-blue-500"
                 : error
-                ? 'border-red-300'
-                : 'border-gray-300'
+                ? "border-red-300"
+                : "border-gray-300"
             } rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -155,7 +159,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
             />
             <svg
               className={`h-12 w-12 ${
-                isDragging ? 'text-blue-500' : 'text-gray-400'
+                isDragging ? "text-blue-500" : "text-gray-400"
               }`}
               fill='none'
               strokeLinecap='round'
@@ -170,7 +174,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
             <p className='mt-2 text-sm text-gray-600'>
               {selectedFile
                 ? `Selected: ${selectedFile.name}`
-                : 'Drag & drop an image or click to browse'}
+                : "Drag & drop an image or click to browse"}
             </p>
           </div>
 
@@ -183,7 +187,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                 <p className='text-sm text-gray-500'>
                   {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </p>
-              </div>{' '}
+              </div>{" "}
               <div className='mt-2 relative h-40'>
                 <Image
                   src={URL.createObjectURL(selectedFile)}
@@ -209,8 +213,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
             disabled={!selectedFile}
             className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
               selectedFile
-                ? 'bg-blue-600 hover:bg-blue-700'
-                : 'bg-blue-400 cursor-not-allowed'
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-blue-400 cursor-not-allowed"
             }`}
           >
             Upload & Process
