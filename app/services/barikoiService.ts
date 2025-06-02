@@ -46,17 +46,18 @@ export async function getReverseGeocode(
   lat: number,
   lon: number
 ): Promise<ReverseGeoResponse> {
-  const url = `https://barikoi.xyz/v2/api/search/reverse/geocode?api_key=NDE2NzpVNzkyTE5UMUoy&latitude=${lat}&longitude=${lon}&country=true&district=true&post_code=true&sub_district=true&union=true&pauroshova=true&location_type=true&division=true&address=true&area=true&bangla=true&thana=true`;
+  const apiKey = process.env.NEXT_PUBLIC_BARIKOI_API_KEY;
+  const url = `https://barikoi.xyz/v2/api/search/reverse/geocode?api_key=${apiKey}&latitude=${lat}&longitude=${lon}&country=true&district=true&post_code=true&sub_district=true&union=true&pauroshova=true&location_type=true&division=true&address=true&area=true&bangla=true&thana=true`;
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error('Failed to fetch reverse geocode data');
+      throw new Error("Failed to fetch reverse geocode data");
     }
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching reverse geocode:', error);
+    console.error("Error fetching reverse geocode:", error);
     throw error;
   }
 }

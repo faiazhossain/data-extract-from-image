@@ -158,7 +158,7 @@ const SimpleMapComponent: React.FC<SimpleMapComponentProps> = ({
     <div style={{ width, height }} className='relative'>
       <Map
         ref={mapRef}
-        mapStyle='https://map.barikoi.com/styles/barikoi-light/style.json?key=NDE2NzpVNzkyTE5UMUoy'
+        mapStyle={`https://map.barikoi.com/styles/barikoi-light/style.json?key=${process.env.NEXT_PUBLIC_BARIKOI_API_KEY}`}
         initialViewState={{
           longitude: initialLongitude,
           latitude: initialLatitude,

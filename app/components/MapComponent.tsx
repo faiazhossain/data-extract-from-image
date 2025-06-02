@@ -1,18 +1,18 @@
-'use client';
-import * as React from 'react';
+"use client";
+import * as React from "react";
 import Map, {
   Marker,
   NavigationControl,
   MapRef,
   MarkerDragEvent,
   Popup,
-} from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef, useEffect } from 'react';
-import { RootState } from '../redux/store';
-import { FaLockOpen } from 'react-icons/fa';
+} from "react-map-gl/maplibre";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { RootState } from "../redux/store";
+import { FaLockOpen } from "react-icons/fa";
 
 // Import icons
 import {
@@ -26,18 +26,18 @@ import {
   FaTheaterMasks,
   FaHome,
   FaMapMarkerAlt,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Explicitly import styles
-import '../maplibre-fix.css';
-import '../marker-styles.css';
+import "../maplibre-fix.css";
+import "../marker-styles.css";
 
 // Import types
-import { POI } from '../types';
-import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { setHoveredPOI, updatePOI } from '../redux/features/poiSlice';
-import { getReverseGeocode } from '../services/barikoiService';
-import MarkerRipple from './MarkerRipple';
+import { POI } from "../types";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
+import { setHoveredPOI, updatePOI } from "../redux/features/poiSlice";
+import { getReverseGeocode } from "../services/barikoiService";
+import MarkerRipple from "./MarkerRipple";
 
 interface MapComponentProps {
   width?: number | string;
@@ -50,48 +50,48 @@ interface MapComponentProps {
 }
 
 const getIconForCategory = (category?: string) => {
-  if (!category) return { component: FaMapMarkerAlt, color: '#555555' };
+  if (!category) return { component: FaMapMarkerAlt, color: "#555555" };
 
   switch (category.toLowerCase()) {
-    case 'healthcare':
-      return { component: FaHospital, color: '#FF5757' };
-    case 'shopping':
-      return { component: FaShoppingCart, color: '#9747FF' };
-    case 'office':
-      return { component: FaBuilding, color: '#5271FF' };
-    case 'restaurant':
-    case 'food':
-      return { component: FaUtensils, color: '#FFB443' };
-    case 'education':
-    case 'school':
-      return { component: FaGraduationCap, color: '#38B6FF' };
-    case 'transportation':
-      return { component: FaBus, color: '#5BB318' };
-    case 'park':
-    case 'recreation':
-      return { component: FaTree, color: '#2DC937' };
-    case 'entertainment':
-      return { component: FaTheaterMasks, color: '#FF66C4' };
-    case 'residential':
-      return { component: FaHome, color: '#607D8B' };
+    case "healthcare":
+      return { component: FaHospital, color: "#FF5757" };
+    case "shopping":
+      return { component: FaShoppingCart, color: "#9747FF" };
+    case "office":
+      return { component: FaBuilding, color: "#5271FF" };
+    case "restaurant":
+    case "food":
+      return { component: FaUtensils, color: "#FFB443" };
+    case "education":
+    case "school":
+      return { component: FaGraduationCap, color: "#38B6FF" };
+    case "transportation":
+      return { component: FaBus, color: "#5BB318" };
+    case "park":
+    case "recreation":
+      return { component: FaTree, color: "#2DC937" };
+    case "entertainment":
+      return { component: FaTheaterMasks, color: "#FF66C4" };
+    case "residential":
+      return { component: FaHome, color: "#607D8B" };
     default:
-      return { component: FaMapMarkerAlt, color: '#555555' };
+      return { component: FaMapMarkerAlt, color: "#555555" };
   }
 };
 
 // Status color mapping
-const getStatusColor = (status: POI['status']) => {
+const getStatusColor = (status: POI["status"]) => {
   switch (status) {
-    case 'ai':
-      return '#FFCC00'; // Yellow
-    case 'verified':
-      return '#22C55E'; // Green
-    case 'edited':
-      return '#6366F1'; // Indigo
-    case 'rejected':
-      return '#EF4444'; // Red
+    case "ai":
+      return "#FFCC00"; // Yellow
+    case "verified":
+      return "#22C55E"; // Green
+    case "edited":
+      return "#6366F1"; // Indigo
+    case "rejected":
+      return "#EF4444"; // Red
     default:
-      return '#FFCC00'; // Default yellow
+      return "#FFCC00"; // Default yellow
   }
 };
 
@@ -101,7 +101,7 @@ const MapComponent = ({
   latitude = 23.82229,
   longitude = 90.38367,
   zoom = 14,
-  mapStyle = 'https://map.barikoi.com/styles/barikoi-light/style.json?key=NDE2NzpVNzkyTE5UMUoy',
+  mapStyle = `https://map.barikoi.com/styles/barikoi-light/style.json?key=${process.env.NEXT_PUBLIC_BARIKOI_API_KEY}`,
   onSelectPOI,
 }: MapComponentProps) => {
   const mapRef = useRef<MapRef>(null);
@@ -162,12 +162,12 @@ const MapComponent = ({
           lat: e.lngLat.lat,
           lng: e.lngLat.lng,
         },
-        status: 'edited' as POI['status'],
+        status: "edited" as POI["status"],
       };
 
       dispatch(updatePOI(updatedPoi));
     } catch (error) {
-      console.error('Error fetching reverse geocode:', error);
+      console.error("Error fetching reverse geocode:", error);
       // If reverse geocoding fails, just update the coordinates
       const updatedPoi = {
         ...poi,
@@ -183,7 +183,7 @@ const MapComponent = ({
           lat: e.lngLat.lat,
           lng: e.lngLat.lng,
         },
-        status: 'edited' as POI['status'],
+        status: "edited" as POI["status"],
       };
       dispatch(updatePOI(updatedPoi));
     } finally {
@@ -260,7 +260,7 @@ const MapComponent = ({
 
       const lat = parseFloat(poi.rupantor.geocoded.latitude);
       const lng = parseFloat(poi.rupantor.geocoded.longitude);
-      const statusColor = getStatusColor(poi.status || 'ai');
+      const statusColor = getStatusColor(poi.status || "ai");
 
       return (
         <React.Fragment key={poi.id || `${lat}-${lng}`}>
@@ -292,7 +292,7 @@ const MapComponent = ({
                   scale: isDragging ? 1.3 : 1,
                 }}
                 transition={{
-                  type: 'spring',
+                  type: "spring",
                   stiffness: 300,
                   damping: 15,
                   delay: poi.id ? getAnimationDelay(poi.id) : 0,
@@ -304,28 +304,28 @@ const MapComponent = ({
                   transition: { duration: 0.2 },
                 }}
                 className={`w-12 h-12 rounded-full flex items-center justify-center cursor-${
-                  isDragModeEnabled ? 'move' : 'pointer'
+                  isDragModeEnabled ? "move" : "pointer"
                 } shadow-lg marker-container group transition-all duration-150 ${
-                  isSelected ? 'ring-3 ring-blue-500 ring-opacity-75' : ''
-                } ${isHovered ? 'scale-110 shadow-xl' : ''} ${
-                  isDragModeEnabled ? 'hover:shadow-2xl' : ''
+                  isSelected ? "ring-3 ring-blue-500 ring-opacity-75" : ""
+                } ${isHovered ? "scale-110 shadow-xl" : ""} ${
+                  isDragModeEnabled ? "hover:shadow-2xl" : ""
                 }`}
                 style={{
-                  backgroundColor: 'white',
+                  backgroundColor: "white",
                   border: `${
                     isHovered || isDragging ? 4 : 3
                   }px solid ${statusColor}`,
-                  position: 'relative',
+                  position: "relative",
                 }}
                 onMouseEnter={() => poi.id && dispatch(setHoveredPOI(poi.id))}
                 onMouseLeave={() => dispatch(setHoveredPOI(null))}
               >
                 <IconComponent
                   className={`text-lg transition-transform ${
-                    isDragModeEnabled ? 'transform group-hover:scale-110' : ''
+                    isDragModeEnabled ? "transform group-hover:scale-110" : ""
                   }`}
                   style={{ color }}
-                />{' '}
+                />{" "}
                 {isDragModeEnabled && !isDragging && !poi.info?.info?.exist && (
                   <div className='absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity'>
                     <FaLockOpen className='w-3 h-3 inline-block mr-1' />
@@ -352,7 +352,7 @@ const MapComponent = ({
             >
               <div className='p-3 max-w-sm'>
                 <div className='flex items-center gap-2 mb-2'>
-                  {' '}
+                  {" "}
                   <h3 className='text-lg font-semibold'>
                     {poi.poi_name || poi.rupantor.geocoded.address_short}
                   </h3>
@@ -365,7 +365,7 @@ const MapComponent = ({
                 <div className='space-y-1 text-sm'>
                   {poi.rupantor.geocoded.area && (
                     <p>
-                      <span className='font-medium'>Area:</span>{' '}
+                      <span className='font-medium'>Area:</span>{" "}
                       {poi.rupantor.geocoded.area}
                       {poi.rupantor.geocoded.sub_area &&
                         `, ${poi.rupantor.geocoded.sub_area}`}
@@ -373,7 +373,7 @@ const MapComponent = ({
                   )}
                   {poi.rupantor.geocoded.road_name_number && (
                     <p>
-                      <span className='font-medium'>Road:</span>{' '}
+                      <span className='font-medium'>Road:</span>{" "}
                       {poi.rupantor.geocoded.road_name_number}
                       {poi.rupantor.geocoded.holding_number &&
                         ` (${poi.rupantor.geocoded.holding_number})`}
@@ -381,30 +381,30 @@ const MapComponent = ({
                   )}
                   {poi.rupantor.geocoded.pType && (
                     <p>
-                      <span className='font-medium'>Type:</span>{' '}
+                      <span className='font-medium'>Type:</span>{" "}
                       {poi.rupantor.geocoded.pType}
                     </p>
                   )}
                   {poi.rupantor.geocoded.postCode && (
                     <p>
-                      <span className='font-medium'>Post Code:</span>{' '}
+                      <span className='font-medium'>Post Code:</span>{" "}
                       {poi.rupantor.geocoded.postCode}
                     </p>
                   )}
                   <p>
-                    <span className='font-medium'>Status:</span>{' '}
+                    <span className='font-medium'>Status:</span>{" "}
                     <span
                       className={`${
-                        poi.status === 'verified'
-                          ? 'text-green-600'
-                          : poi.status === 'edited'
-                          ? 'text-blue-600'
-                          : poi.status === 'rejected'
-                          ? 'text-red-600'
-                          : 'text-yellow-600'
+                        poi.status === "verified"
+                          ? "text-green-600"
+                          : poi.status === "edited"
+                          ? "text-blue-600"
+                          : poi.status === "rejected"
+                          ? "text-red-600"
+                          : "text-yellow-600"
                       }`}
                     >
-                      {poi.status || 'ai'}
+                      {poi.status || "ai"}
                     </span>
                   </p>
                 </div>
@@ -412,14 +412,14 @@ const MapComponent = ({
                   <p className='text-xs text-gray-500'>
                     {poi.rupantor.geocoded.Address}
                   </p>
-                </div>{' '}
+                </div>{" "}
                 {isDragModeEnabled && (
                   <div className='mt-2 pt-2 border-t border-gray-200'>
                     <p className='text-xs text-blue-600'>
                       <FaLockOpen className='w-3 h-3 inline-block mr-1' />
                       {poi.info?.info?.exist
-                        ? 'This is an existing POI and cannot be moved'
-                        : 'Drag mode enabled - Click and drag to move marker'}
+                        ? "This is an existing POI and cannot be moved"
+                        : "Drag mode enabled - Click and drag to move marker"}
                     </p>
                   </div>
                 )}
@@ -433,7 +433,7 @@ const MapComponent = ({
 
   return (
     <div style={{ width, height }} className='relative'>
-      {' '}
+      {" "}
       <Map
         ref={mapRef}
         mapStyle={mapStyle}
@@ -447,7 +447,7 @@ const MapComponent = ({
           bearing: 0,
           pitch: 0,
         }}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: "100%", height: "100%" }}
       >
         <NavigationControl position='top-right' showCompass showZoom />
         {renderPOIs()}
