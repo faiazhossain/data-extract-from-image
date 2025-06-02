@@ -58,30 +58,35 @@ const UploadModal: React.FC<UploadModalProps> = ({
     setError(null);
     // Check if the file is an image
     if (file.type.startsWith('image/')) {
-      try {
-        // Create URL for the uploaded image
-        const imageUrl = URL.createObjectURL(file);
+      // Create URL for the uploaded image
+      const imageUrl = URL.createObjectURL(file);
 
-        // Read EXIF data including GPS
+      let coordinates;
+      // Try to read EXIF data including GPS, but continue even if it fails
+      try {
         const output = await exifr.parse(file, { gps: true });
-        const coordinates =
+        coordinates =
           output?.latitude && output?.longitude
             ? { latitude: output.latitude, longitude: output.longitude }
             : undefined;
-
-        // Save image and coordinates to Redux store
-        dispatch(
-          setUploadedImage({
-            url: imageUrl,
-            file,
-            coordinates,
-          })
-        );
-        setSelectedFile(file);
       } catch (error) {
         console.error('Error reading image metadata:', error);
-        setError('Error processing image metadata');
+        // Just show a warning instead of blocking the upload
+        setError(
+          'Warning: Could not process image metadata (GPS coordinates may be missing)'
+        );
+        // Continue with upload despite the error
       }
+
+      // Save image and coordinates to Redux store - proceed even if coordinates are undefined
+      dispatch(
+        setUploadedImage({
+          url: imageUrl,
+          file,
+          coordinates,
+        })
+      );
+      setSelectedFile(file);
     } else {
       setError('Please select an image file');
     }
